@@ -1,0 +1,454 @@
+{
+  "catalog_version": "0.1.0-draft",
+  "catalog_status": "initial-local-catalog",
+  "scope_note": "This catalog is an assistant-facing guide to existing CE-RISE assets. It must not be used as a substitute for CE-RISE components, services, schemas, methods, documentation, or deployment workflows.",
+  "primary_human_reference": "https://solution.ce-rise.eu/",
+  "compliance_note": "Compliance-oriented outputs are implementation planning aids, not legal certification or legal advice.",
+  "source_assumptions": [
+    "The Codeberg CE-RISE repositories are the canonical software development sources.",
+    "The GitHub mirrors are used for release automation, OCI image publication, MCP registry publication, and Zenodo integration.",
+    "The assistant should guide users toward reuse and configuration of existing CE-RISE assets."
+  ],
+  "capabilities": [
+    {
+      "id": "solution_discovery",
+      "family": "discovery",
+      "title": "CE-RISE solution discovery",
+      "description": "Identify which existing CE-RISE components, documentation, models, and deployment assets are relevant to a Digital Passport engineering goal.",
+      "keywords": ["discover", "overview", "component", "catalog", "ce-rise", "solution", "which", "what"],
+      "related_components": ["solution_portal", "hex_core_service", "dp_storage_jsondb_service", "dp_system_local_demonstrator", "dp_system_gitops_template", "dp_assessment_workbench"],
+      "mvp_supported": true
+    },
+    {
+      "id": "passport_architecture_guidance",
+      "family": "design",
+      "title": "Digital Passport architecture guidance",
+      "description": "Recommend an implementation path that combines existing CE-RISE services, storage, models, validation, and deployment assets.",
+      "keywords": ["architecture", "design", "system", "topology", "passport", "deployment", "prototype", "production"],
+      "related_components": ["hex_core_service", "dp_storage_jsondb_service", "dp_system_local_demonstrator", "dp_system_gitops_template"],
+      "mvp_supported": true
+    },
+    {
+      "id": "data_model_and_semantic_alignment",
+      "family": "data-model",
+      "title": "Data model and semantic alignment",
+      "description": "Guide users toward existing CE-RISE and related Digital Passport model assets, then use assessment workflows to compare coverage and gaps.",
+      "keywords": ["model", "schema", "semantic", "rdf", "shacl", "validation", "alignment", "product", "material", "traceability"],
+      "related_components": ["dp_assessment_workbench", "ce_rise_models"],
+      "mvp_supported": true
+    },
+    {
+      "id": "implementation_planning",
+      "family": "implementation",
+      "title": "Implementation planning",
+      "description": "Turn a user goal into ordered engineering steps that reuse CE-RISE assets and expose assumptions, missing inputs, and validation points.",
+      "keywords": ["plan", "implement", "steps", "roadmap", "configure", "integrate", "workflow"],
+      "related_components": ["solution_portal", "hex_core_service", "dp_storage_jsondb_service", "dp_assessment_workbench", "dp_system_gitops_template"],
+      "mvp_supported": true
+    },
+    {
+      "id": "readiness_assessment",
+      "family": "validation",
+      "title": "Implementation readiness assessment",
+      "description": "Check whether a Digital Passport implementation has enough declared scope, data, component choices, deployment context, and validation strategy to proceed.",
+      "keywords": ["ready", "readiness", "gap", "missing", "validate", "check", "risk", "requirement"],
+      "related_components": ["dp_assessment_workbench", "dp_system_local_demonstrator", "dp_system_gitops_template"],
+      "mvp_supported": true
+    },
+    {
+      "id": "deployment_guidance",
+      "family": "deployment",
+      "title": "Deployment guidance",
+      "description": "Guide users from local demonstration toward existing CE-RISE deployment assets without automating cloud deployment in the initial version.",
+      "keywords": ["deploy", "deployment", "docker", "container", "gitops", "kubernetes", "production", "local"],
+      "related_components": ["dp_system_local_demonstrator", "dp_system_gitops_template", "hex_core_service", "dp_storage_jsondb_service"],
+      "mvp_supported": true
+    },
+    {
+      "id": "adoption_context_assessment",
+      "family": "adoption",
+      "title": "Digital Passport adoption context assessment",
+      "description": "Assess an organization's Digital Passport adoption context across scope, compliance drivers, value-chain role, data readiness, and value goals.",
+      "keywords": ["adoption", "context", "organization", "business", "compliance", "value", "readiness", "passport"],
+      "related_components": ["solution_portal", "dp_assessment_workbench", "dp_system_local_demonstrator"],
+      "mvp_supported": true
+    },
+    {
+      "id": "value_chain_information_mapping",
+      "family": "value-chain",
+      "title": "Value-chain information mapping",
+      "description": "Map information that an organization may need to request, hold, validate, enrich, or share across Digital Passport value-chain interactions.",
+      "keywords": ["value-chain", "information", "supplier", "customer", "actor", "share", "request", "traceability"],
+      "related_components": ["ce_rise_models", "dp_assessment_workbench", "hex_core_service", "dp_storage_jsondb_service"],
+      "mvp_supported": true
+    },
+    {
+      "id": "shared_information_value_opportunities",
+      "family": "value-creation",
+      "title": "Shared information value opportunities",
+      "description": "Identify practical value opportunities from shared Digital Passport information, including reporting efficiency, traceability, circularity services, and data quality improvements.",
+      "keywords": ["value", "opportunity", "shared", "information", "circularity", "traceability", "efficiency", "reporting"],
+      "related_components": ["re_indicators_calculation_service", "dp_assessment_workbench", "hex_core_service"],
+      "mvp_supported": true
+    }
+  ],
+  "components": [
+    {
+      "id": "solution_portal",
+      "name": "CE-RISE Solution Portal",
+      "kind": "documentation-entry-point",
+      "repository": null,
+      "url": "https://solution.ce-rise.eu/",
+      "description": "Canonical human-facing entry point for the CE-RISE solution.",
+      "assistant_role": "Use as the top-level reference when explaining how CE-RISE assets fit together."
+    },
+    {
+      "id": "hex_core_service",
+      "name": "HEX Core Service",
+      "kind": "service",
+      "repository": "https://codeberg.org/CE-RISE-software/hex-core-service",
+      "url": null,
+      "description": "Existing CE-RISE service asset for Digital Passport system implementations.",
+      "assistant_role": "Guide users toward configuring and integrating the existing service rather than replacing it."
+    },
+    {
+      "id": "dp_storage_jsondb_service",
+      "name": "Digital Passport JSON DB Storage Service",
+      "kind": "service",
+      "repository": "https://codeberg.org/CE-RISE-software/dp-storage-jsondb-service",
+      "url": null,
+      "description": "Existing CE-RISE storage service asset for Digital Passport data.",
+      "assistant_role": "Use when a workflow needs a CE-RISE storage component; the local demonstrator shows one example of how it can be exercised."
+    },
+    {
+      "id": "dp_system_local_demonstrator",
+      "name": "Digital Passport System Local Demonstrator",
+      "kind": "deployment-workflow",
+      "repository": "https://codeberg.org/CE-RISE-software/dp-system-local-demonstrator",
+      "url": null,
+      "description": "Existing CE-RISE local demonstration environment that illustrates one way to exercise Digital Passport system components together.",
+      "assistant_role": "Use as a reference example for prototype learning, smoke-test design, and local validation patterns; generalize its workflow rather than treating its concrete data or local settings as defaults."
+    },
+    {
+      "id": "dp_system_gitops_template",
+      "name": "Digital Passport System GitOps Template",
+      "kind": "deployment-template",
+      "repository": "https://codeberg.org/CE-RISE-software/dp-system-gitops-template",
+      "url": null,
+      "description": "Existing CE-RISE deployment template for GitOps-oriented Digital Passport system deployment.",
+      "assistant_role": "Use when guiding from local proof-of-concept toward deployment planning."
+    },
+    {
+      "id": "dp_assessment_workbench",
+      "name": "Digital Passport Model Assessment Workbench",
+      "kind": "mcp-server-and-toolkit",
+      "repository": "https://codeberg.org/CE-RISE-software/dp-assessment-workbench",
+      "url": "https://ce-rise-software.codeberg.page/dp-assessment-workbench/",
+      "description": "Existing deterministic workbench and MCP server for SHACL-based Digital Passport model assessment and use-case coverage analysis.",
+      "assistant_role": "Use for model assessment, comparison, coverage, prioritization, and composition recommendations."
+    },
+    {
+      "id": "ce_rise_models",
+      "name": "CE-RISE Models",
+      "kind": "model-assets",
+      "repository": "https://codeberg.org/CE-RISE-models",
+      "url": null,
+      "description": "Existing CE-RISE model assets and generated artifacts.",
+      "assistant_role": "Use as source material for data model and semantic alignment guidance."
+    },
+    {
+      "id": "re_indicators_calculation_service",
+      "name": "RE Indicators Calculation Service",
+      "kind": "service",
+      "repository": "https://codeberg.org/CE-RISE-software/re-indicators-calculation-service",
+      "url": "https://ce-rise-software.codeberg.page/re-indicators-calculation-service/",
+      "description": "Existing CE-RISE service asset for resource efficiency indicator calculation workflows.",
+      "assistant_role": "Use when a Digital Passport workflow needs CE-RISE circularity or resource-efficiency indicator calculation."
+    }
+  ],
+  "architecture_patterns": [
+    {
+      "id": "local_demonstrator_first",
+      "title": "Local demonstrator as reference example",
+      "description": "Use the existing local demonstrator to understand component behavior, integration points, and sample workflow patterns, then adapt those patterns to the adopter's own scope before deployment planning.",
+      "best_for": ["prototype", "learning", "local validation", "component discovery"],
+      "component_sequence": ["solution_portal", "dp_system_local_demonstrator", "hex_core_service", "dp_storage_jsondb_service", "dp_assessment_workbench"]
+    },
+    {
+      "id": "service_backed_passport_system",
+      "title": "Service-backed Digital Passport system",
+      "description": "Use the existing CE-RISE core and storage services as the backbone, then add validation, model assessment, and deployment planning around them.",
+      "best_for": ["implementation planning", "system integration", "company engineering workflow"],
+      "component_sequence": ["solution_portal", "hex_core_service", "dp_storage_jsondb_service", "dp_assessment_workbench"]
+    },
+    {
+      "id": "model_assessment_and_alignment",
+      "title": "Model assessment and alignment path",
+      "description": "Begin with data model scope and SHACL/use-case coverage assessment before selecting the system deployment path.",
+      "best_for": ["semantic alignment", "schema selection", "model coverage", "Digital Passport data"],
+      "component_sequence": ["ce_rise_models", "dp_assessment_workbench", "solution_portal"]
+    },
+    {
+      "id": "gitops_deployment_path",
+      "title": "GitOps deployment path",
+      "description": "Use the existing CE-RISE GitOps template after local validation and component selection have produced a stable deployment plan.",
+      "best_for": ["deployment planning", "production preparation", "repeatable environment setup"],
+      "component_sequence": ["dp_system_local_demonstrator", "dp_system_gitops_template", "hex_core_service", "dp_storage_jsondb_service"]
+    }
+  ],
+  "adoption_context_fields": [
+    {
+      "id": "organization_role",
+      "label": "Organization role",
+      "description": "The organization's role in the value chain, such as manufacturer, supplier, recycler, service provider, integrator, marketplace, or regulator-facing operator."
+    },
+    {
+      "id": "passport_scope",
+      "label": "Passport scope",
+      "description": "The product, material, asset, process, or lifecycle slice the Digital Passport should cover."
+    },
+    {
+      "id": "compliance_drivers",
+      "label": "Compliance drivers",
+      "description": "The external reporting, customer, procurement, regulatory, or governance reasons for adopting a Digital Passport."
+    },
+    {
+      "id": "value_chain_actors",
+      "label": "Value-chain actors",
+      "description": "Upstream and downstream actors that provide, consume, validate, enrich, or rely on passport information."
+    },
+    {
+      "id": "shared_information",
+      "label": "Shared information",
+      "description": "Information the organization expects to request, hold, validate, enrich, or share."
+    },
+    {
+      "id": "data_sources",
+      "label": "Data sources",
+      "description": "Known data systems, files, APIs, schemas, or manual sources that can populate passport records."
+    },
+    {
+      "id": "existing_systems",
+      "label": "Existing systems",
+      "description": "Relevant internal or partner systems such as ERP, PLM, MES, LIMS, data lakes, spreadsheets, supplier portals, or APIs."
+    },
+    {
+      "id": "value_goals",
+      "label": "Value goals",
+      "description": "Expected benefits beyond compliance, such as lower reporting effort, traceability, circularity services, supplier collaboration, or data quality improvements."
+    },
+    {
+      "id": "implementation_constraints",
+      "label": "Implementation constraints",
+      "description": "Time, skills, integration, data quality, governance, confidentiality, interoperability, or deployment constraints."
+    }
+  ],
+  "compliance_drivers": [
+    {
+      "id": "regulatory_reporting",
+      "title": "Regulatory or policy reporting",
+      "description": "Structured information is needed to respond to regulatory, policy, or authority-facing reporting expectations.",
+      "keywords": ["regulation", "regulatory", "reporting", "compliance", "authority", "policy"],
+      "evidence_needs": ["declared scope", "structured data model", "data provenance", "validation trail"]
+    },
+    {
+      "id": "customer_requirement",
+      "title": "Customer or buyer requirement",
+      "description": "A downstream customer requests passport-like information, traceability evidence, product attributes, or sustainability data.",
+      "keywords": ["customer", "buyer", "request", "procurement", "supplier", "contract"],
+      "evidence_needs": ["requested fields", "exchange format", "confidence level", "sharing constraints"]
+    },
+    {
+      "id": "sustainability_and_circularity_claims",
+      "title": "Sustainability and circularity claims",
+      "description": "Passport information is needed to support sustainability, circularity, repair, reuse, recycling, or resource-efficiency claims.",
+      "keywords": ["sustainability", "circularity", "claim", "reuse", "repair", "recycling", "resource"],
+      "evidence_needs": ["indicator definitions", "calculation method", "input data provenance", "validation checks"]
+    },
+    {
+      "id": "supply_chain_traceability",
+      "title": "Supply-chain traceability",
+      "description": "The organization needs a clearer chain of custody, provenance, lifecycle events, or actor accountability across the value chain.",
+      "keywords": ["traceability", "provenance", "chain", "custody", "lifecycle", "actor"],
+      "evidence_needs": ["actor identifiers", "event model", "source records", "join strategy"]
+    },
+    {
+      "id": "internal_data_governance",
+      "title": "Internal data governance and reuse",
+      "description": "The Digital Passport effort is also a way to improve internal data quality, interoperability, and reuse across teams or systems.",
+      "keywords": ["internal", "governance", "quality", "interoperability", "reuse", "data"],
+      "evidence_needs": ["data ownership", "system inventory", "quality checks", "maintenance process"]
+    }
+  ],
+  "value_chain_flow_types": [
+    {
+      "id": "product_identity",
+      "title": "Product identity and classification",
+      "description": "Identifiers, versioning, classification, and basic passport metadata used to connect records across systems and actors.",
+      "keywords": ["identity", "identifier", "classification", "version", "metadata"],
+      "direction": "shared-across-chain",
+      "related_components": ["ce_rise_models", "hex_core_service", "dp_storage_jsondb_service"]
+    },
+    {
+      "id": "material_and_composition",
+      "title": "Material and composition information",
+      "description": "Information about materials, components, composition, substances, or bill-of-material structures.",
+      "keywords": ["material", "composition", "component", "substance", "bom"],
+      "direction": "upstream-to-downstream",
+      "related_components": ["ce_rise_models", "dp_assessment_workbench"]
+    },
+    {
+      "id": "provenance_and_lifecycle_events",
+      "title": "Provenance and lifecycle events",
+      "description": "Actor, location, event, transformation, use, repair, reuse, and end-of-life signals that create traceability.",
+      "keywords": ["provenance", "lifecycle", "event", "actor", "location", "repair", "reuse"],
+      "direction": "multi-actor",
+      "related_components": ["ce_rise_models", "dp_assessment_workbench", "hex_core_service"]
+    },
+    {
+      "id": "compliance_evidence",
+      "title": "Compliance evidence and declarations",
+      "description": "Declarations, certificates, checks, assertions, or evidence records needed for reporting and due-diligence workflows.",
+      "keywords": ["compliance", "evidence", "declaration", "certificate", "check", "assertion"],
+      "direction": "shared-with-requesting-party",
+      "related_components": ["dp_assessment_workbench", "hex_core_service", "dp_storage_jsondb_service"]
+    },
+    {
+      "id": "circularity_and_resource_efficiency",
+      "title": "Circularity and resource-efficiency indicators",
+      "description": "Information used to calculate, explain, or compare circularity and resource-efficiency indicators.",
+      "keywords": ["circularity", "resource", "efficiency", "indicator", "calculation"],
+      "direction": "derived-from-shared-data",
+      "related_components": ["re_indicators_calculation_service", "dp_assessment_workbench"]
+    },
+    {
+      "id": "service_repair_reuse_end_of_life",
+      "title": "Service, repair, reuse, and end-of-life information",
+      "description": "Information that supports maintenance, repair, second-life decisions, recycling, reverse logistics, and end-of-life handling.",
+      "keywords": ["service", "repair", "reuse", "second-life", "recycling", "end-of-life"],
+      "direction": "downstream-and-return-loop",
+      "related_components": ["ce_rise_models", "hex_core_service", "dp_storage_jsondb_service"]
+    }
+  ],
+  "value_opportunity_patterns": [
+    {
+      "id": "reduce_reporting_burden",
+      "title": "Reduce repeated reporting effort",
+      "description": "Reuse structured passport information to reduce manual reporting and repeated customer or authority-facing data preparation.",
+      "keywords": ["reporting", "compliance", "manual", "effort", "reuse"],
+      "required_information": ["product_identity", "compliance_evidence"],
+      "related_components": ["ce_rise_models", "dp_assessment_workbench", "hex_core_service"]
+    },
+    {
+      "id": "improve_supplier_customer_exchange",
+      "title": "Improve supplier-customer information exchange",
+      "description": "Use passport structures to make requested and shared information more explicit, reusable, and easier to validate.",
+      "keywords": ["supplier", "customer", "exchange", "request", "share", "procurement"],
+      "required_information": ["product_identity", "material_and_composition", "compliance_evidence"],
+      "related_components": ["hex_core_service", "dp_storage_jsondb_service", "ce_rise_models"]
+    },
+    {
+      "id": "strengthen_traceability_confidence",
+      "title": "Strengthen traceability confidence",
+      "description": "Connect actor, provenance, lifecycle, and evidence records so downstream users can understand where information comes from.",
+      "keywords": ["traceability", "provenance", "confidence", "actor", "lifecycle"],
+      "required_information": ["product_identity", "provenance_and_lifecycle_events", "compliance_evidence"],
+      "related_components": ["ce_rise_models", "dp_assessment_workbench", "hex_core_service"]
+    },
+    {
+      "id": "enable_circularity_services",
+      "title": "Enable circularity services",
+      "description": "Use shared information to support repair, reuse, second-life, recycling, and resource-efficiency workflows.",
+      "keywords": ["circularity", "repair", "reuse", "recycling", "second-life", "resource"],
+      "required_information": ["material_and_composition", "provenance_and_lifecycle_events", "service_repair_reuse_end_of_life", "circularity_and_resource_efficiency"],
+      "related_components": ["re_indicators_calculation_service", "ce_rise_models", "hex_core_service"]
+    },
+    {
+      "id": "improve_internal_data_quality",
+      "title": "Improve internal data quality and interoperability",
+      "description": "Use passport adoption to clarify source systems, ownership, joins, identifiers, and validation rules across internal workflows.",
+      "keywords": ["internal", "quality", "interoperability", "identifier", "validation", "governance"],
+      "required_information": ["product_identity", "provenance_and_lifecycle_events"],
+      "related_components": ["dp_assessment_workbench", "ce_rise_models"]
+    }
+  ],
+  "adoption_paths": [
+    {
+      "id": "exploration_and_readiness",
+      "title": "Exploration and readiness path",
+      "description": "Clarify scope, drivers, actors, information needs, and available data before selecting implementation components.",
+      "best_for": ["early exploration", "unclear scope", "multiple drivers"],
+      "phase_ids": ["scope_adoption_context", "map_information_flows", "assess_readiness", "select_reuse_path"],
+      "component_sequence": ["solution_portal", "dp_assessment_workbench"]
+    },
+    {
+      "id": "local_prototype_path",
+      "title": "Local prototype path",
+      "description": "Move from adoption context into a generalized local workflow using the CE-RISE local demonstrator as an example of service interaction and sample information-flow checks.",
+      "best_for": ["prototype", "local validation", "learning by doing"],
+      "phase_ids": ["scope_adoption_context", "select_local_components", "run_local_demonstrator", "validate_model_and_data"],
+      "component_sequence": ["solution_portal", "dp_system_local_demonstrator", "hex_core_service", "dp_storage_jsondb_service", "dp_assessment_workbench"]
+    },
+    {
+      "id": "model_first_alignment_path",
+      "title": "Model-first alignment path",
+      "description": "Start from schemas, SHACL assets, and use-case coverage before selecting the final service or deployment path.",
+      "best_for": ["semantic alignment", "data model uncertainty", "coverage checking"],
+      "phase_ids": ["scope_information_requirements", "select_model_sources", "assess_model_coverage", "prioritize_model_gaps"],
+      "component_sequence": ["ce_rise_models", "dp_assessment_workbench", "solution_portal"]
+    },
+    {
+      "id": "value_chain_exchange_path",
+      "title": "Value-chain exchange path",
+      "description": "Focus first on requested and shared information between actors, then map the exchange to CE-RISE model and service assets.",
+      "best_for": ["supplier-customer exchange", "shared information", "traceability"],
+      "phase_ids": ["map_actors", "map_information_flows", "classify_shared_information", "validate_exchange_readiness"],
+      "component_sequence": ["ce_rise_models", "dp_assessment_workbench", "hex_core_service", "dp_storage_jsondb_service"]
+    },
+    {
+      "id": "deployment_preparation_path",
+      "title": "Deployment preparation path",
+      "description": "Use after a local prototype or model assessment has produced stable component choices and deployment constraints.",
+      "best_for": ["deployment planning", "production preparation", "repeatable setup"],
+      "phase_ids": ["confirm_component_choices", "document_configuration", "map_to_gitops_template", "plan_operational_checks"],
+      "component_sequence": ["dp_system_local_demonstrator", "dp_system_gitops_template", "hex_core_service", "dp_storage_jsondb_service"]
+    }
+  ],
+  "readiness_fields": [
+    {
+      "id": "passport_scope",
+      "label": "Passport scope",
+      "description": "The product, material, asset, or process scope of the Digital Passport."
+    },
+    {
+      "id": "user_goal",
+      "label": "User goal",
+      "description": "The concrete engineering goal the passport system should support."
+    },
+    {
+      "id": "data_sources",
+      "label": "Data sources",
+      "description": "Known data systems, files, APIs, schemas, or manual sources that can populate passport records."
+    },
+    {
+      "id": "selected_components",
+      "label": "Selected CE-RISE components",
+      "description": "Existing CE-RISE assets selected for reuse."
+    },
+    {
+      "id": "data_model_strategy",
+      "label": "Data model strategy",
+      "description": "Declared schema, SHACL, semantic model, or assessment path."
+    },
+    {
+      "id": "deployment_context",
+      "label": "Deployment context",
+      "description": "Reference-example learning, local container workflow, GitOps, Kubernetes, or other target context."
+    },
+    {
+      "id": "validation_strategy",
+      "label": "Validation strategy",
+      "description": "Planned checks for model coverage, data quality, integration readiness, and deployment smoke tests."
+    }
+  ]
+}

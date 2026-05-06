@@ -1,5 +1,5 @@
 [book]
-title = "CE-RISE Software Template Documentation"
+title = "CE-RISE Digital Passport Engineering Assistant"
 authors = ["CE-RISE consortium"]
 language = "en"
 src = "."
@@ -8,6 +8,6 @@ src = "."
 build-dir = "book"
 
 [output.html]
-git-repository-url = "https://codeberg.org/CE-RISE-software/template-software"
+git-repository-url = "https://codeberg.org/CE-RISE-software/dp-engineering-assistant"
 sidebar-header-nav = true
 additional-js = ["theme/custom.js"]

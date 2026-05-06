@@ -7,8 +7,8 @@ on:
       - 'v*.*.*-*'  # Matches pre-release tags like v1.0.0-beta
 
 env:
-  PROJECT_NAME: CE-RISE Software Template # PLEASE UPDATE THE PROJECT TITLE HERE
-  PRIMARY_REPO_URL: https://codeberg.org/CE-RISE-software/CE-RISE-software # PLEASE UPDATE THE PROJECT MAIN URL HERE
+  PROJECT_NAME: CE-RISE Digital Passport Engineering Assistant
+  PRIMARY_REPO_URL: https://codeberg.org/CE-RISE-software/dp-engineering-assistant
 
 jobs:
   create-release:

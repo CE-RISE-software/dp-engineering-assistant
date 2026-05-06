@@ -1,0 +1,126 @@
+{
+  "manifest_version": "0.1.0-draft",
+  "scope_note": "Connected sources are authoritative CE-RISE repositories, documentation sites, model assets, and service references used to ground assistant guidance. The assistant must point users to these sources rather than replace them.",
+  "sources": [
+    {
+      "id": "solution_portal",
+      "component_id": "solution_portal",
+      "title": "CE-RISE Solution Portal",
+      "kind": "documentation-site",
+      "connection_modes": ["local_repository", "documentation_url"],
+      "local_path": "../solution",
+      "repository_url": "https://codeberg.org/CE-RISE-software/solution",
+      "documentation_url": "https://solution.ce-rise.eu/",
+      "source_role": "Canonical human-facing solution overview and component navigation.",
+      "key_files": ["README.md", "docs/index.md", "docs/overview.md", "docs/capabilities.md", "docs/components.md", "docs/references.md"]
+    },
+    {
+      "id": "hex_core_service",
+      "component_id": "hex_core_service",
+      "title": "HEX Core Service",
+      "kind": "service-repository",
+      "connection_modes": ["local_repository", "documentation_url", "containerized_service"],
+      "local_path": "../hex-core-service",
+      "repository_url": "https://codeberg.org/CE-RISE-software/hex-core-service",
+      "documentation_url": "https://ce-rise-software.codeberg.page/hex-core-service/",
+      "source_role": "Existing CE-RISE core service asset for Digital Passport implementations.",
+      "key_files": ["README.md", "Cargo.toml", "docs/index.md", "docs/architecture.md", "docs/api-reference.md", "docs/configuration.md", "docs/deployment.md", "docs/model-onboarding.md"]
+    },
+    {
+      "id": "dp_storage_jsondb_service",
+      "component_id": "dp_storage_jsondb_service",
+      "title": "Digital Passport JSON DB Storage Service",
+      "kind": "service-repository",
+      "connection_modes": ["local_repository", "documentation_url", "containerized_service"],
+      "local_path": "../dp-storage-jsondb-service",
+      "repository_url": "https://codeberg.org/CE-RISE-software/dp-storage-jsondb-service",
+      "documentation_url": "https://ce-rise-software.codeberg.page/dp-storage-jsondb-service/",
+      "source_role": "Existing CE-RISE storage service asset for Digital Passport data.",
+      "key_files": ["README.md", "Cargo.toml", "docs/index.md", "docs/architecture.md", "docs/http-contract.md", "docs/query-language.md", "docs/configuration.md", "docs/deployment.md"]
+    },
+    {
+      "id": "dp_system_local_demonstrator",
+      "component_id": "dp_system_local_demonstrator",
+      "title": "Digital Passport System Local Demonstrator",
+      "kind": "deployment-workflow-repository",
+      "connection_modes": ["local_repository", "compose_workflow"],
+      "local_path": "../dp-system-local-demonstrator",
+      "repository_url": "https://codeberg.org/CE-RISE-software/dp-system-local-demonstrator",
+      "documentation_url": null,
+      "source_role": "Existing local demonstration workflow used as a reference example for trying CE-RISE Digital Passport components together and generalizing reusable patterns.",
+      "key_files": ["README.md", "AGENTS.md", "Makefile", "demo.sh", "compose/README.md", "compose/docker-compose.yml", "payloads/dp_valid.json", "payloads/dp_invalid.json"]
+    },
+    {
+      "id": "dp_system_gitops_template",
+      "component_id": "dp_system_gitops_template",
+      "title": "Digital Passport System GitOps Template",
+      "kind": "deployment-template-repository",
+      "connection_modes": ["local_repository", "documentation_url", "compose_workflow", "kubernetes_workflow"],
+      "local_path": "../dp-system-gitops-template",
+      "repository_url": "https://codeberg.org/CE-RISE-software/dp-system-gitops-template",
+      "documentation_url": "https://ce-rise-software.codeberg.page/dp-system-gitops-template/",
+      "source_role": "Existing CE-RISE template for repeatable Digital Passport system deployment planning.",
+      "key_files": ["README.md", "AGENTS.md", "docs/index.md", "docs/architecture.md", "docs/configuration.md", "docs/deployment.md", "docs/operations.md", "compose/README.md", "k8s/README.md"]
+    },
+    {
+      "id": "dp_assessment_workbench",
+      "component_id": "dp_assessment_workbench",
+      "title": "Digital Passport Model Assessment Workbench",
+      "kind": "mcp-server-and-toolkit-repository",
+      "connection_modes": ["local_repository", "documentation_url", "mcp_server", "containerized_service"],
+      "local_path": "../dp-assessment-workbench",
+      "repository_url": "https://codeberg.org/CE-RISE-software/dp-assessment-workbench",
+      "documentation_url": "https://ce-rise-software.codeberg.page/dp-assessment-workbench/",
+      "source_role": "Existing CE-RISE MCP/toolkit reference for model assessment, comparison, coverage analysis, and MCP publication patterns.",
+      "key_files": ["README.md", "server.json", "pyproject.toml", "docs/index.md", "docs/mcp-server.md", "docs/api-reference.md", "examples/README.md", "tests/test_mcp_server.py"]
+    },
+    {
+      "id": "re_indicators_calculation_service",
+      "component_id": "re_indicators_calculation_service",
+      "title": "RE Indicators Calculation Service",
+      "kind": "service-repository",
+      "connection_modes": ["local_repository", "documentation_url", "containerized_service"],
+      "local_path": "../re-indicators-calculation-service",
+      "repository_url": "https://codeberg.org/CE-RISE-software/re-indicators-calculation-service",
+      "documentation_url": "https://ce-rise-software.codeberg.page/re-indicators-calculation-service/",
+      "source_role": "Existing CE-RISE service for resource-efficiency indicator calculation workflows.",
+      "key_files": ["README.md", "Cargo.toml", "docs/index.md", "docs/api-overview.md", "docs/api-reference.md", "docs/local-testing.md", "docs/integration.md", "payloads/recycle_battery_compute_request.json"]
+    },
+    {
+      "id": "ce_rise_models_index",
+      "component_id": "ce_rise_models",
+      "title": "CE-RISE Models Workspace",
+      "kind": "model-workspace",
+      "connection_modes": ["local_repository", "model_assets"],
+      "local_path": "../../CE-RISE-models",
+      "repository_url": "https://codeberg.org/CE-RISE-models",
+      "documentation_url": null,
+      "source_role": "Workspace containing CE-RISE Digital Passport model repositories and generated model artifacts.",
+      "key_files": ["dp-architecture/README.md", "dp-record-metadata/README.md", "traceability-and-life-cycle-events/README.md", "re-indicators-specification/README.md", "product-profile/README.md", "material-profile/README.md", "compliance-and-standards/README.md"]
+    },
+    {
+      "id": "re_indicators_specification",
+      "component_id": "ce_rise_models",
+      "title": "RE Indicators Specification",
+      "kind": "model-repository",
+      "connection_modes": ["local_repository", "documentation_url", "model_assets"],
+      "local_path": "../../CE-RISE-models/re-indicators-specification",
+      "repository_url": "https://codeberg.org/CE-RISE-models/re-indicators-specification",
+      "documentation_url": "https://ce-rise-models.codeberg.page/re-indicators-specification/",
+      "source_role": "CE-RISE model/specification asset for resource-efficiency indicators.",
+      "key_files": ["README.md", "Makefile", "CHANGELOG.md", "CITATION.cff"]
+    },
+    {
+      "id": "traceability_and_life_cycle_events_model",
+      "component_id": "ce_rise_models",
+      "title": "Traceability and Life Cycle Events Model",
+      "kind": "model-repository",
+      "connection_modes": ["local_repository", "documentation_url", "model_assets"],
+      "local_path": "../../CE-RISE-models/traceability-and-life-cycle-events",
+      "repository_url": "https://codeberg.org/CE-RISE-models/traceability-and-life-cycle-events",
+      "documentation_url": "https://ce-rise-models.codeberg.page/traceability-and-life-cycle-events/",
+      "source_role": "CE-RISE model asset for provenance, traceability, and lifecycle event information.",
+      "key_files": ["README.md", "Makefile", "CHANGELOG.md", "CITATION.cff"]
+    }
+  ]
+}

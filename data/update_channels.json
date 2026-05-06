@@ -1,0 +1,231 @@
+{
+  "manifest_version": "0.1.0-draft",
+  "scope_note": "Update channels let the assistant check current CE-RISE repository, release, tag, repository-discovery, documentation, and generated-artifact metadata at tool-call time. Stable guidance remains catalog-driven; current version-sensitive facts should be resolved from these channels when requested.",
+  "policy": {
+    "default_remote_check": false,
+    "network_scope": "Only configured read-only HTTP(S) channels are checked.",
+    "interpretation_rule": "Remote metadata can update recommendations about versions, recently changed components, and documentation pointers, but it must not override the stable non-substitution scope rule."
+  },
+  "channels": [
+    {
+      "id": "hex_core_service_codeberg_releases",
+      "component_id": "hex_core_service",
+      "source_id": "hex_core_service",
+      "kind": "gitea_releases",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/hex-core-service/releases",
+      "title": "HEX Core Service Codeberg releases",
+      "description": "Current release metadata for the canonical HEX Core Service repository.",
+      "update_role": "software_component_version"
+    },
+    {
+      "id": "dp_storage_jsondb_service_codeberg_releases",
+      "component_id": "dp_storage_jsondb_service",
+      "source_id": "dp_storage_jsondb_service",
+      "kind": "gitea_releases",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/dp-storage-jsondb-service/releases",
+      "title": "Digital Passport JSON DB Storage Service Codeberg releases",
+      "description": "Current release metadata for the canonical CE-RISE JSON DB storage service repository.",
+      "update_role": "software_component_version"
+    },
+    {
+      "id": "dp_system_local_demonstrator_codeberg_releases",
+      "component_id": "dp_system_local_demonstrator",
+      "source_id": "dp_system_local_demonstrator",
+      "kind": "gitea_releases",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/dp-system-local-demonstrator/releases",
+      "title": "Digital Passport System Local Demonstrator Codeberg releases",
+      "description": "Current release metadata for the local demonstrator reference example.",
+      "update_role": "reference_example_version"
+    },
+    {
+      "id": "dp_system_gitops_template_codeberg_releases",
+      "component_id": "dp_system_gitops_template",
+      "source_id": "dp_system_gitops_template",
+      "kind": "gitea_releases",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/dp-system-gitops-template/releases",
+      "title": "Digital Passport System GitOps Template Codeberg releases",
+      "description": "Current release metadata for the canonical CE-RISE deployment template.",
+      "update_role": "deployment_template_version"
+    },
+    {
+      "id": "dp_assessment_workbench_codeberg_releases",
+      "component_id": "dp_assessment_workbench",
+      "source_id": "dp_assessment_workbench",
+      "kind": "gitea_releases",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/dp-assessment-workbench/releases",
+      "title": "Digital Passport Model Assessment Workbench Codeberg releases",
+      "description": "Current release metadata for the CE-RISE assessment workbench and MCP reference implementation.",
+      "update_role": "tooling_version"
+    },
+    {
+      "id": "re_indicators_calculation_service_codeberg_releases",
+      "component_id": "re_indicators_calculation_service",
+      "source_id": "re_indicators_calculation_service",
+      "kind": "gitea_releases",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/re-indicators-calculation-service/releases",
+      "title": "RE Indicators Calculation Service Codeberg releases",
+      "description": "Current release metadata for the existing CE-RISE RE Indicators Calculation Service.",
+      "update_role": "software_component_version"
+    },
+    {
+      "id": "ce_rise_models_codeberg_repositories",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_org_repos",
+      "url": "https://codeberg.org/api/v1/orgs/CE-RISE-models/repos?limit=100",
+      "title": "CE-RISE Models Codeberg repositories",
+      "description": "Repository discovery channel for model repositories published under the CE-RISE-models Codeberg organization.",
+      "update_role": "model_repository_discovery"
+    },
+    {
+      "id": "circularity_and_eol_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/circularity-and-eol/tags",
+      "title": "Circularity and EOL model tags",
+      "description": "Current version tags for the CE-RISE circularity and end-of-life data model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "compliance_and_standards_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/compliance-and-standards/tags",
+      "title": "Compliance and Standards model tags",
+      "description": "Current version tags for the CE-RISE compliance and standards data model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "diagnostic_results_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/diagnostic-results/tags",
+      "title": "Diagnostic Results model tags",
+      "description": "Current version tags for the CE-RISE diagnostic results data model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "dp_access_and_governance_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/dp-access-and-governance/tags",
+      "title": "DP Access and Governance model tags",
+      "description": "Current version tags for the CE-RISE Digital Passport access and governance data model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "dp_architecture_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/dp-architecture/tags",
+      "title": "DP Architecture model documentation tags",
+      "description": "Current version tags for the CE-RISE Digital Passport model architecture documentation repository.",
+      "update_role": "model_documentation_version"
+    },
+    {
+      "id": "dp_record_custody_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/dp-record-custody/tags",
+      "title": "DP Record Custody model tags",
+      "description": "Current version tags for the CE-RISE Digital Passport record custody data model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "integrated_lca_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/integrated-lca/tags",
+      "title": "Integrated LCA model tags",
+      "description": "Current version tags for the CE-RISE integrated LCA data model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "material_profile_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/material-profile/tags",
+      "title": "Material Profile model tags",
+      "description": "Current version tags for the CE-RISE material profile data model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "dp_record_metadata_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/dp-record-metadata/tags",
+      "title": "DP Record Metadata model tags",
+      "description": "Current version tags for the CE-RISE Digital Passport record metadata model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "re_indicators_specification_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "re_indicators_specification",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/re-indicators-specification/tags",
+      "title": "RE Indicators Specification tags",
+      "description": "Current version tags for the CE-RISE RE Indicators model/specification repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "traceability_life_cycle_events_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "traceability_and_life_cycle_events_model",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/traceability-and-life-cycle-events/tags",
+      "title": "Traceability and Life Cycle Events model tags",
+      "description": "Current version tags for the CE-RISE traceability and lifecycle events model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "usage_and_maintenance_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/usage-and-maintenance/tags",
+      "title": "Usage and Maintenance model tags",
+      "description": "Current version tags for the CE-RISE usage and maintenance model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "product_profile_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/product-profile/tags",
+      "title": "Product Profile model tags",
+      "description": "Current version tags for the CE-RISE product profile model repository.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "template_data_model_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "ce_rise_models_index",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/template-data-model/tags",
+      "title": "Template Data Model tags",
+      "description": "Current version tags for the CE-RISE data model project template repository.",
+      "update_role": "model_template_version"
+    },
+    {
+      "id": "solution_portal_head",
+      "component_id": "solution_portal",
+      "source_id": "solution_portal",
+      "kind": "http_head",
+      "url": "https://solution.ce-rise.eu/",
+      "title": "CE-RISE Solution Portal availability",
+      "description": "Read-only metadata for the main human-facing CE-RISE solution portal.",
+      "update_role": "documentation_availability"
+    }
+  ]
+}

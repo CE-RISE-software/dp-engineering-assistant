@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CE-RISE-software/dp-engineering-assistant",
+  "title": "CE-RISE Digital Passport Engineering Assistant",
+  "description": "Helps plan and reuse CE-RISE Digital Passport components, models, and deployment assets.",
+  "repository": {
+    "url": "https://github.com/CE-RISE-software/dp-engineering-assistant",
+    "source": "github"
+  },
+  "version": "0.0.1",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/ce-rise-software/dp-engineering-assistant-mcp:0.0.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

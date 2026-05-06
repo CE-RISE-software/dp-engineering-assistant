@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: Project template for software developed within the CE-RISE Horizon Europe project
+title: CE-RISE Digital Passport Engineering Assistant
 type: software
 doi: xxx_to_be_obtained_xxx
 authors:
@@ -12,14 +12,17 @@ identifiers:
   - type: doi
     value: xxx_to_be_obtained_xxx
     description: This DOI represents all software versions.
-repository-code: 'https://codeberg.org/CE-RISE-software/template-software'
-url: 'https://ce-rise-software.codeberg.page/template-software/'
+repository-code: 'https://codeberg.org/CE-RISE-software/dp-engineering-assistant'
+url: 'https://ce-rise-software.codeberg.page/dp-engineering-assistant/'
 abstract: >-
-  Project template for data models developed within the CE-RISE Horizon Europe project.
+  MCP server for AI-assisted reuse, configuration, and implementation planning
+  across existing CE-RISE Digital Passport assets.
 keywords:
   - CE-RISE
   - Open Source
   - Open Science
   - Digital Product Passport
   - Digital Material Passport
+  - Model Context Protocol
+  - MCP
 license: EUPL-1.2

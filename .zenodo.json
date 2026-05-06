@@ -1,6 +1,6 @@
 {
-  "title": "Project template for software developed within the CE-RISE Horizon Europe project",
-  "description": "Project template for data models developed within the CE-RISE Horizon Europe project.",
+  "title": "CE-RISE Digital Passport Engineering Assistant",
+  "description": "MCP server for AI-assisted reuse, configuration, and implementation planning across existing CE-RISE Digital Passport assets.",
   "license": "EUPL-1.2",
   "upload_type": "software",
   "creators": [
@@ -15,9 +15,11 @@
     "Open Source",
     "Open Science",
     "Digital Product Passport",
-    "Digital Material Passport"
+    "Digital Material Passport",
+    "Model Context Protocol",
+    "MCP"
   ],
-  "notes": "v0.0.1 - Initial sketch of project template.",
+  "notes": "v0.0.1 - Initial MCP server setup with deterministic CE-RISE solution catalog.",
   "communities": [
     { "identifier": "ce-rise" },
     { "identifier": "impact" }
@@ -27,7 +29,7 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "https://codeberg.org/CE-RISE-software/template-software",
+      "identifier": "https://codeberg.org/CE-RISE-software/dp-engineering-assistant",
       "relation": "isSupplementTo",
       "resource_type": "software"
     }

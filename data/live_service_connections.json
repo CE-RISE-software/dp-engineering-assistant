@@ -1,0 +1,114 @@
+{
+  "manifest_version": "0.1.0-draft",
+  "scope_note": "Live service connections are read-only discovery probes for existing CE-RISE services. They must not perform domain operations, create records, compute indicators, refresh registries, or mutate service state.",
+  "default_timeout_seconds": 2.0,
+  "services": [
+    {
+      "id": "hex_core_service_local",
+      "component_id": "hex_core_service",
+      "title": "HEX Core Service local endpoint",
+      "service_family": "core",
+      "default_base_url": "http://127.0.0.1:8080",
+      "source_id": "hex_core_service",
+      "description": "Read-only discovery probes for a locally running HEX Core Service.",
+      "safe_endpoints": [
+        {
+          "id": "health",
+          "method": "GET",
+          "path": "/admin/health",
+          "purpose": "Liveness probe"
+        },
+        {
+          "id": "ready",
+          "method": "GET",
+          "path": "/admin/ready",
+          "purpose": "Readiness probe"
+        },
+        {
+          "id": "version",
+          "method": "GET",
+          "path": "/admin/version",
+          "purpose": "Service and OpenAPI version probe"
+        },
+        {
+          "id": "models_count",
+          "method": "GET",
+          "path": "/admin/models/count",
+          "purpose": "Number of currently indexed registry models"
+        },
+        {
+          "id": "openapi",
+          "method": "GET",
+          "path": "/openapi.json",
+          "purpose": "Machine-readable OpenAPI document"
+        }
+      ],
+      "blocked_endpoint_patterns": [
+        "POST /models/{model}/versions/{version}:validate",
+        "POST /models/{model}/versions/{version}:create",
+        "POST /models/{model}/versions/{version}:query",
+        "POST /admin/registry/refresh"
+      ]
+    },
+    {
+      "id": "dp_storage_jsondb_service_local",
+      "component_id": "dp_storage_jsondb_service",
+      "title": "Digital Passport JSON DB Storage Service local endpoint",
+      "service_family": "storage",
+      "default_base_url": "http://127.0.0.1:8081",
+      "source_id": "dp_storage_jsondb_service",
+      "description": "Read-only discovery probes for a locally running Digital Passport JSON DB Storage Service.",
+      "safe_endpoints": [
+        {
+          "id": "health",
+          "method": "GET",
+          "path": "/health",
+          "purpose": "Liveness probe"
+        },
+        {
+          "id": "ready",
+          "method": "GET",
+          "path": "/ready",
+          "purpose": "Readiness probe"
+        },
+        {
+          "id": "openapi",
+          "method": "GET",
+          "path": "/openapi.json",
+          "purpose": "Machine-readable OpenAPI document"
+        }
+      ],
+      "blocked_endpoint_patterns": [
+        "POST /records",
+        "GET /records/{id}",
+        "POST /records/query"
+      ]
+    },
+    {
+      "id": "re_indicators_calculation_service_local",
+      "component_id": "re_indicators_calculation_service",
+      "title": "RE Indicators Calculation Service local endpoint",
+      "service_family": "calculation",
+      "default_base_url": "http://127.0.0.1:8083",
+      "source_id": "re_indicators_calculation_service",
+      "description": "Read-only discovery probes for a locally running RE Indicators Calculation Service.",
+      "safe_endpoints": [
+        {
+          "id": "health",
+          "method": "GET",
+          "path": "/health",
+          "purpose": "Liveness and configuration probe"
+        },
+        {
+          "id": "openapi",
+          "method": "GET",
+          "path": "/openapi.json",
+          "purpose": "Machine-readable OpenAPI document"
+        }
+      ],
+      "blocked_endpoint_patterns": [
+        "POST /compute"
+      ]
+    }
+  ]
+}

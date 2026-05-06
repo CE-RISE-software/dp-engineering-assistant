@@ -1,0 +1,12 @@
+{
+  "target": "both",
+  "project_name": "digital passport pilot",
+  "selected_components": [
+    "hex_core_service",
+    "re_indicators_calculation_service"
+  ],
+  "include_re_indicators": true,
+  "external_io_adapter_url": "https://io-adapter.example.org",
+  "check_remote_updates": true,
+  "timeout_seconds": 10
+}

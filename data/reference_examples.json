@@ -1,0 +1,98 @@
+{
+  "manifest_version": "0.1.0-draft",
+  "scope_note": "Reference examples are illustrative CE-RISE workflows. The assistant may generalize reusable patterns from them, but must not treat their product examples, payloads, auth choices, ports, or local-only settings as defaults for every adopter.",
+  "examples": [
+    {
+      "id": "dp_system_local_demonstrator",
+      "title": "Digital Passport System Local Demonstrator",
+      "source_component_id": "dp_system_local_demonstrator",
+      "source_id": "dp_system_local_demonstrator",
+      "repository_url": "https://codeberg.org/CE-RISE-software/dp-system-local-demonstrator",
+      "example_role": "Local-only deterministic reference workflow showing how existing CE-RISE Digital Passport services, storage, model registry entries, payloads, and smoke checks can be exercised together.",
+      "concrete_example_elements": [
+        "Docker Compose stack with HEX Core Service, JSON DB storage service, PostgreSQL, and optional RE Indicators Calculation Service",
+        "fictional product records used as demonstration payloads",
+        "local no-auth configuration for deterministic development runs",
+        "valid and invalid payload paths",
+        "record creation, persistence, read-back, and validation checks",
+        "optional resource-efficiency indicator calculation scenario"
+      ],
+      "generalizable_patterns": [
+        {
+          "id": "declare_scope_and_roles",
+          "title": "Declare scope and actor roles before running a workflow",
+          "generalized_action": "Replace the demonstrator's fictional product context with the adopter's actual product, material, asset, process, or lifecycle scope and value-chain roles.",
+          "reusable_ce_rise_assets": ["solution_portal", "ce_rise_models", "dp_assessment_workbench"],
+          "not_assumptions": [
+            "Do not assume the demonstrator's fictional products are relevant to the adopter.",
+            "Do not assume the demonstrator's data fields are complete for another scope."
+          ]
+        },
+        {
+          "id": "select_services_and_storage",
+          "title": "Select CE-RISE services and storage deliberately",
+          "generalized_action": "Use the demonstrator to understand service interactions, then choose the CE-RISE services and storage pattern needed for the adopter's target workflow.",
+          "reusable_ce_rise_assets": ["hex_core_service", "dp_storage_jsondb_service", "re_indicators_calculation_service"],
+          "not_assumptions": [
+            "Do not assume the optional RE indicators service is always required.",
+            "Do not assume local PostgreSQL-backed storage is the production storage decision."
+          ]
+        },
+        {
+          "id": "adapt_model_registry",
+          "title": "Adapt the model registry catalog",
+          "generalized_action": "Use the demonstrator's registry catalog pattern to identify the model artifact URLs needed by the adopter's passport scope.",
+          "reusable_ce_rise_assets": ["ce_rise_models", "hex_core_service", "dp_assessment_workbench"],
+          "not_assumptions": [
+            "Do not assume the demonstrator's catalog entries cover every adopter scope.",
+            "Do not vendor model artifacts when the existing CE-RISE publication workflow should be used."
+          ]
+        },
+        {
+          "id": "prepare_representative_payloads",
+          "title": "Prepare representative valid and invalid payloads",
+          "generalized_action": "Translate the demonstrator's valid/invalid payload pattern into adopter-specific payload examples with expected validation outcomes.",
+          "reusable_ce_rise_assets": ["ce_rise_models", "dp_assessment_workbench", "hex_core_service"],
+          "not_assumptions": [
+            "Do not reuse fictional payload data as adopter evidence.",
+            "Do not treat a passing sample payload as compliance certification."
+          ]
+        },
+        {
+          "id": "exercise_lifecycle_operations",
+          "title": "Exercise the intended record lifecycle",
+          "generalized_action": "Use the demonstrator's create, persist, query, and read-back sequence as a pattern for the adopter's intended passport record lifecycle.",
+          "reusable_ce_rise_assets": ["hex_core_service", "dp_storage_jsondb_service"],
+          "not_assumptions": [
+            "Do not assume the demonstrator's no-auth local session handling applies outside local development.",
+            "Do not assume every workflow needs record creation in the first planning stage."
+          ]
+        },
+        {
+          "id": "turn_demo_checks_into_operational_checks",
+          "title": "Turn demo checks into operational checks",
+          "generalized_action": "Generalize the demonstrator's scripted checks into environment-appropriate smoke, readiness, validation, and rollback checks.",
+          "reusable_ce_rise_assets": ["dp_system_local_demonstrator", "dp_system_gitops_template"],
+          "not_assumptions": [
+            "Do not use local-only no-auth checks as production acceptance criteria.",
+            "Do not treat demonstration success as deployment readiness without environment-specific checks."
+          ]
+        }
+      ],
+      "adaptation_questions": [
+        "What product, material, asset, process, or lifecycle scope replaces the demonstrator's fictional examples?",
+        "Which value-chain actors provide, validate, consume, or enrich the passport information?",
+        "Which CE-RISE model artifacts are relevant to the declared scope?",
+        "Which payloads should be valid, invalid, incomplete, or edge-case examples for this adopter?",
+        "Which services are required now, and which optional services can be deferred?",
+        "What authentication, storage, and deployment decisions differ between local development and production?"
+      ],
+      "reuse_boundaries": [
+        "The demonstrator is a reference example, not the target architecture for every adopter.",
+        "Local no-auth configuration is for deterministic development only.",
+        "Fictional payload content is not adopter evidence.",
+        "Deployment handover should use the CE-RISE GitOps template and component documentation."
+      ]
+    }
+  ]
+}

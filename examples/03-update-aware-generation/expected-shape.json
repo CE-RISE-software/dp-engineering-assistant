@@ -1,0 +1,27 @@
+{
+  "result_type": "deployment_artifact_generation_result",
+  "content": {
+    "version_context": {
+      "policy": "current_metadata_when_checked",
+      "remote_checked": true,
+      "resolved_versions": [
+        {
+          "channel_id": "dp_record_metadata_tags",
+          "component_id": "ce_rise_models",
+          "version": "pages-v..."
+        }
+      ]
+    },
+    "files": [
+      {
+        "path": "compose/registry/catalog.json"
+      },
+      {
+        "path": "k8s/base/registry-configmap.yaml"
+      },
+      {
+        "path": "VERSION-CONTEXT.md"
+      }
+    ]
+  }
+}
