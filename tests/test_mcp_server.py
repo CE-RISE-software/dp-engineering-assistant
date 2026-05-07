@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from server.mcp_server import McpServer
@@ -9,6 +11,26 @@ from server.mcp_server import McpServer
 class McpServerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.server = McpServer()
+
+    def connected_source_fixture(self, root: Path) -> dict[str, object]:
+        return {
+            "manifest_version": "test",
+            "scope_note": "test connected source manifest",
+            "sources": [
+                {
+                    "id": "hex_core_service",
+                    "component_id": "hex_core_service",
+                    "title": "HEX Core Service",
+                    "kind": "service-repository",
+                    "connection_modes": ["local_repository", "documentation_url"],
+                    "local_path": str(root),
+                    "repository_url": "https://codeberg.org/CE-RISE-software/hex-core-service",
+                    "documentation_url": "https://ce-rise-software.codeberg.page/hex-core-service/",
+                    "source_role": "Existing CE-RISE core service asset for Digital Passport implementations.",
+                    "key_files": ["README.md"],
+                }
+            ],
+        }
 
     def initialize(self) -> dict[str, object]:
         response = self.server.handle_message(
@@ -107,7 +129,7 @@ class McpServerTest(unittest.TestCase):
         }
         self.assertIn("data_model_and_semantic_alignment", capability_ids)
         source_ids = {item["id"] for item in structured["content"]["source_references"]}
-        self.assertIn("dp_assessment_workbench", source_ids)
+        self.assertIn("ce_rise_models_index", source_ids)
         live_service_ids = {item["id"] for item in structured["content"]["live_service_connections"]}
         self.assertIn("hex_core_service_local", live_service_ids)
         self.assertEqual(
@@ -174,7 +196,7 @@ class McpServerTest(unittest.TestCase):
             }
         )
         source_text = source_response[0]["result"]["contents"][0]["text"]
-        self.assertIn("dp_assessment_workbench", source_text)
+        self.assertIn("hex_core_service", source_text)
 
         service_response = self.server.handle_message(
             {
@@ -274,7 +296,7 @@ class McpServerTest(unittest.TestCase):
         component_ids = {
             item["id"] for item in structured["content"]["suggested_ce_rise_components"]
         }
-        self.assertIn("dp_assessment_workbench", component_ids)
+        self.assertIn("ce_rise_models", component_ids)
         source_ids = {item["id"] for item in structured["content"]["source_references"]}
         self.assertIn("ce_rise_models_index", source_ids)
 
@@ -310,43 +332,57 @@ class McpServerTest(unittest.TestCase):
 
     def test_connected_sources_report_local_status(self) -> None:
         self.initialize()
-        response = self.server.handle_message(
-            {
-                "jsonrpc": "2.0",
-                "id": 10,
-                "method": "tools/call",
-                "params": {
-                    "name": "list_connected_sources",
-                    "arguments": {"include_status": True},
-                },
-            }
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "README.md").write_text("# HEX Core Service\n", encoding="utf-8")
+            with patch(
+                "server.mcp_server._load_sources",
+                return_value=self.connected_source_fixture(root),
+            ):
+                response = self.server.handle_message(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 10,
+                        "method": "tools/call",
+                        "params": {
+                            "name": "list_connected_sources",
+                            "arguments": {"include_status": True},
+                        },
+                    }
+                )
         structured = response[0]["result"]["structuredContent"]
         self.assertEqual(structured["result_type"], "connected_sources_result")
         source_ids = {item["id"] for item in structured["content"]["sources"]}
-        self.assertIn("dp_assessment_workbench", source_ids)
-        dpawb = next(item for item in structured["content"]["sources"] if item["id"] == "dp_assessment_workbench")
-        self.assertTrue(dpawb["local_status"]["available"])
+        self.assertIn("hex_core_service", source_ids)
+        source = next(item for item in structured["content"]["sources"] if item["id"] == "hex_core_service")
+        self.assertTrue(source["local_status"]["available"])
 
     def test_connected_source_inspection_reads_curated_headings(self) -> None:
         self.initialize()
-        response = self.server.handle_message(
-            {
-                "jsonrpc": "2.0",
-                "id": 11,
-                "method": "tools/call",
-                "params": {
-                    "name": "inspect_connected_source",
-                    "arguments": {
-                        "source_id": "dp_assessment_workbench",
-                        "include_headings": True,
-                    },
-                },
-            }
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "README.md").write_text("# HEX Core Service\n\n## Usage\n", encoding="utf-8")
+            with patch(
+                "server.mcp_server._load_sources",
+                return_value=self.connected_source_fixture(root),
+            ):
+                response = self.server.handle_message(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 11,
+                        "method": "tools/call",
+                        "params": {
+                            "name": "inspect_connected_source",
+                            "arguments": {
+                                "source_id": "hex_core_service",
+                                "include_headings": True,
+                            },
+                        },
+                    }
+                )
         structured = response[0]["result"]["structuredContent"]
         self.assertEqual(structured["result_type"], "connected_source_inspection_result")
-        self.assertEqual(structured["content"]["source"]["id"], "dp_assessment_workbench")
+        self.assertEqual(structured["content"]["source"]["id"], "hex_core_service")
         readme = next(item for item in structured["content"]["files"] if item["path"] == "README.md")
         self.assertTrue(readme["exists"])
         self.assertGreater(len(readme["headings"]), 0)

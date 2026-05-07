@@ -156,7 +156,7 @@ The documentation site is published from the Codeberg repository:
 
 - https://ce-rise-software.codeberg.page/dp-engineering-assistant/
 
-The GitHub repository is a mirror used for release-side automation, following the same CE-RISE MCP publication pattern used by `dp-assessment-workbench`:
+The GitHub repository is a mirror used for release-side automation, following the CE-RISE MCP publication pattern:
 
 - build and publish the MCP OCI image to GitHub Container Registry;
 - update `server.json` for the release version and image tag;

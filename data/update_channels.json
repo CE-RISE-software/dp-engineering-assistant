@@ -48,16 +48,6 @@
       "update_role": "deployment_template_version"
     },
     {
-      "id": "dp_assessment_workbench_codeberg_releases",
-      "component_id": "dp_assessment_workbench",
-      "source_id": "dp_assessment_workbench",
-      "kind": "gitea_releases",
-      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/dp-assessment-workbench/releases",
-      "title": "Digital Passport Model Assessment Workbench Codeberg releases",
-      "description": "Current release metadata for the CE-RISE assessment workbench and MCP reference implementation.",
-      "update_role": "tooling_version"
-    },
-    {
       "id": "re_indicators_calculation_service_codeberg_releases",
       "component_id": "re_indicators_calculation_service",
       "source_id": "re_indicators_calculation_service",

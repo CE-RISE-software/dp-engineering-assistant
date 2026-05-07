@@ -160,7 +160,7 @@ Example connected-source inspection:
 
 ```json
 {
-  "source_id": "dp_assessment_workbench",
+  "source_id": "hex_core_service",
   "include_headings": true
 }
 ```

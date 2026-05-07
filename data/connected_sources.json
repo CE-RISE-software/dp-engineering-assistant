@@ -63,18 +63,6 @@
       "key_files": ["README.md", "AGENTS.md", "docs/index.md", "docs/architecture.md", "docs/configuration.md", "docs/deployment.md", "docs/operations.md", "compose/README.md", "k8s/README.md"]
     },
     {
-      "id": "dp_assessment_workbench",
-      "component_id": "dp_assessment_workbench",
-      "title": "Digital Passport Model Assessment Workbench",
-      "kind": "mcp-server-and-toolkit-repository",
-      "connection_modes": ["local_repository", "documentation_url", "mcp_server", "containerized_service"],
-      "local_path": "../dp-assessment-workbench",
-      "repository_url": "https://codeberg.org/CE-RISE-software/dp-assessment-workbench",
-      "documentation_url": "https://ce-rise-software.codeberg.page/dp-assessment-workbench/",
-      "source_role": "Existing CE-RISE MCP/toolkit reference for model assessment, comparison, coverage analysis, and MCP publication patterns.",
-      "key_files": ["README.md", "server.json", "pyproject.toml", "docs/index.md", "docs/mcp-server.md", "docs/api-reference.md", "examples/README.md", "tests/test_mcp_server.py"]
-    },
-    {
       "id": "re_indicators_calculation_service",
       "component_id": "re_indicators_calculation_service",
       "title": "RE Indicators Calculation Service",

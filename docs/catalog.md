@@ -38,7 +38,6 @@ The initial catalog includes:
 - Digital Passport JSON DB Storage Service
 - Digital Passport System Local Demonstrator
 - Digital Passport System GitOps Template
-- Digital Passport Model Assessment Workbench
 - CE-RISE Models
 - RE Indicators Calculation Service
 

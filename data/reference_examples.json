@@ -22,7 +22,7 @@
           "id": "declare_scope_and_roles",
           "title": "Declare scope and actor roles before running a workflow",
           "generalized_action": "Replace the demonstrator's fictional product context with the adopter's actual product, material, asset, process, or lifecycle scope and value-chain roles.",
-          "reusable_ce_rise_assets": ["solution_portal", "ce_rise_models", "dp_assessment_workbench"],
+          "reusable_ce_rise_assets": ["solution_portal", "ce_rise_models"],
           "not_assumptions": [
             "Do not assume the demonstrator's fictional products are relevant to the adopter.",
             "Do not assume the demonstrator's data fields are complete for another scope."
@@ -42,7 +42,7 @@
           "id": "adapt_model_registry",
           "title": "Adapt the model registry catalog",
           "generalized_action": "Use the demonstrator's registry catalog pattern to identify the model artifact URLs needed by the adopter's passport scope.",
-          "reusable_ce_rise_assets": ["ce_rise_models", "hex_core_service", "dp_assessment_workbench"],
+          "reusable_ce_rise_assets": ["ce_rise_models", "hex_core_service"],
           "not_assumptions": [
             "Do not assume the demonstrator's catalog entries cover every adopter scope.",
             "Do not vendor model artifacts when the existing CE-RISE publication workflow should be used."
@@ -52,7 +52,7 @@
           "id": "prepare_representative_payloads",
           "title": "Prepare representative valid and invalid payloads",
           "generalized_action": "Translate the demonstrator's valid/invalid payload pattern into adopter-specific payload examples with expected validation outcomes.",
-          "reusable_ce_rise_assets": ["ce_rise_models", "dp_assessment_workbench", "hex_core_service"],
+          "reusable_ce_rise_assets": ["ce_rise_models", "hex_core_service"],
           "not_assumptions": [
             "Do not reuse fictional payload data as adopter evidence.",
             "Do not treat a passing sample payload as compliance certification."

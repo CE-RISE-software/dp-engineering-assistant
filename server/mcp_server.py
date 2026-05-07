@@ -909,7 +909,7 @@ def generate_implementation_plan(arguments: dict[str, object]) -> dict[str, obje
             "id": "choose_data_model_strategy",
             "title": "Choose the data model and validation strategy",
             "action": "Identify available schemas, SHACL assets, or model sources, then assess coverage where possible.",
-            "ce_rise_reuse": ["ce_rise_models", "dp_assessment_workbench"],
+            "ce_rise_reuse": ["ce_rise_models"],
         },
         {
             "id": "run_local_demonstration",
@@ -927,7 +927,7 @@ def generate_implementation_plan(arguments: dict[str, object]) -> dict[str, obje
             "id": "record_gaps",
             "title": "Record missing information and risks",
             "action": "List missing data sources, model gaps, integration assumptions, deployment constraints, and validation checks.",
-            "ce_rise_reuse": ["dp_assessment_workbench"],
+            "ce_rise_reuse": ["ce_rise_models"],
         },
     ]
     return _result(
@@ -3159,7 +3159,7 @@ def _component_sequence(record: dict[str, object], catalog: dict[str, Any]) -> l
 
 def _phase_components(phase_id: str, path: dict[str, object]) -> list[str]:
     if "model" in phase_id or "coverage" in phase_id or "validate" in phase_id:
-        return ["ce_rise_models", "dp_assessment_workbench"]
+        return ["ce_rise_models"]
     if "local" in phase_id or "demonstrator" in phase_id:
         return ["dp_system_local_demonstrator", "hex_core_service", "dp_storage_jsondb_service"]
     if "gitops" in phase_id or "operational" in phase_id or "deployment" in phase_id:
@@ -3208,7 +3208,7 @@ def _phase_detail(phase_id: str) -> dict[str, object]:
         "validate_model_and_data": {
             "title": "Validate model and data readiness",
             "objective": "Check whether declared information needs align with model and validation assets.",
-            "actions": ["Use CE-RISE model assets and the assessment workbench where applicable."],
+            "actions": ["Use CE-RISE model assets and document coverage questions or gaps."],
             "completion_evidence": ["Model coverage or gap result is available."]
         },
         "scope_information_requirements": {
@@ -3226,7 +3226,7 @@ def _phase_detail(phase_id: str) -> dict[str, object]:
         "assess_model_coverage": {
             "title": "Assess model coverage",
             "objective": "Use model assessment to compare information needs against available model assets.",
-            "actions": ["Run or plan dp-assessment-workbench coverage and assessment steps."],
+            "actions": ["Review available CE-RISE model artifacts against the declared information needs."],
             "completion_evidence": ["Coverage result or assessment plan exists."]
         },
         "prioritize_model_gaps": {
