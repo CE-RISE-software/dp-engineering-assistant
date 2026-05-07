@@ -1,6 +1,6 @@
 # CE-RISE Digital Passport Engineering Assistant
 
-[![DOI](https://zenodo.org/badge/DOI/TOBEOBTAINED.svg)](https://doi.org/TOBEOBTAINED)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20066903.svg)](https://doi.org/10.5281/zenodo.20066903)
 
 <!-- mcp-name: io.github.CE-RISE-software/dp-engineering-assistant -->
 

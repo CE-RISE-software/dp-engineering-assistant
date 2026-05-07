@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 title: CE-RISE Digital Passport Engineering Assistant
 type: software
-doi: xxx_to_be_obtained_xxx
+doi: 10.5281/zenodo.20066903
 authors:
   - given-names: Riccardo
     family-names: Boero
@@ -10,7 +10,7 @@ authors:
     affiliation: NILU
 identifiers:
   - type: doi
-    value: xxx_to_be_obtained_xxx
+    value: 10.5281/zenodo.20066903
     description: This DOI represents all software versions.
 repository-code: 'https://codeberg.org/CE-RISE-software/dp-engineering-assistant'
 url: 'https://ce-rise-software.codeberg.page/dp-engineering-assistant/'
