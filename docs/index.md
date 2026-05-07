@@ -24,7 +24,7 @@ The first implementation is intentionally small and deterministic:
 - MCP tools for planning, generating, and readiness-checking deployment artifact outputs;
 - MCP tools for listing reference examples and generalizing reusable workflow patterns from them;
 - MCP tools for optional update-aware context over configured CE-RISE upstream channels;
-- MCP resources exposing the catalog, source manifest, and core scope rule;
+- MCP resources exposing the catalog, source manifest, live service manifest, deployment artifact manifest, reference-example manifest, update channel manifest, and core scope rule;
 - a first design workflow example under `examples/01-design-workflow/`;
 - local validation and smoke scripts;
 - release-side metadata for OCI image publication and MCP registry publication from the GitHub mirror.
@@ -48,6 +48,7 @@ The human-facing CE-RISE solution entry point remains:
 ```bash
 ./scripts/run-local.sh
 ./scripts/smoke-mcp.sh
+./scripts/smoke-container.sh
 ./scripts/validate-local.sh
 ```
 
@@ -57,7 +58,13 @@ The canonical repository is maintained on Codeberg:
 
 - https://codeberg.org/CE-RISE-software/dp-engineering-assistant
 
+The published documentation for this MCP server is:
+
+- https://ce-rise-software.codeberg.page/dp-engineering-assistant/
+
 The GitHub mirror is used for release automation, OCI image publication, MCP registry publication, and Zenodo integration.
+
+After release, MCP clients can discover the server through the MCP Registry identity `io.github.CE-RISE-software/dp-engineering-assistant`. When the server is registered behind the CE-RISE MCPO gateway, HTTP/OpenAPI clients can reach it through the gateway endpoint published in this documentation.
 
 ---
 

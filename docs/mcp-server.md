@@ -15,6 +15,8 @@ The current runtime is repo-native and uses only the Python standard library. It
 - message framing: newline-delimited JSON-RPC 2.0
 - exposed MCP capabilities: `tools`, `resources`
 - catalog source: `data/solution_catalog.json`
+- connected-source manifest: `data/connected_sources.json`
+- live service connection source: `data/live_service_connections.json`
 - deployment artifact source: `data/deployment_artifacts.json`
 - reference example source: `data/reference_examples.json`
 - update channel source: `data/update_channels.json`
@@ -112,7 +114,7 @@ Stable tools remain deterministic by default, but component-aware outputs includ
 
 - `list_update_channels` to discover configured release, tag, documentation, and artifact channels;
 - `check_update_channels` to fetch current metadata from selected channels;
-- `build_update_aware_solution_context` to combine stable catalog components with optional remote update checks.
+- `build_update_aware_solution_context` to combine stable catalog components with optional remote update checks;
 - `discover_model_repositories` to check the configured CE-RISE model repository namespace and propose channels for model repositories that are not yet explicitly tracked.
 
 Generation tools can also include update checks directly when they expose `check_remote_updates`. In that mode, generated outputs include `version_context` and a generated `VERSION-CONTEXT.md` file.
@@ -177,9 +179,19 @@ Minimal local MCP client configuration:
 
 ## Publication
 
+Project documentation is published at:
+
+- https://ce-rise-software.codeberg.page/dp-engineering-assistant/
+
 The MCP registry identity is declared in `server.json`:
 
 - `io.github.CE-RISE-software/dp-engineering-assistant`
+
+Once a release is published, MCP clients can discover the stdio server through the MCP Registry identity and run the published OCI package:
+
+- `ghcr.io/ce-rise-software/dp-engineering-assistant-mcp:<release-version>`
+
+When the server is registered behind the CE-RISE MCPO gateway, HTTP/OpenAPI clients can reach the same MCP tools through the gateway endpoint published in the project documentation. That MCPO/OpenAPI URL is deployment metadata, so it is documented when provisioned rather than embedded in the server code.
 
 The GitHub mirror workflow `.github/workflows/publish-mcp.yml` is responsible for:
 

@@ -14,6 +14,10 @@ The main human-facing CE-RISE solution entry point is:
 
 - https://solution.ce-rise.eu/
 
+The public documentation for this MCP server is published at:
+
+- https://ce-rise-software.codeberg.page/dp-engineering-assistant/
+
 ---
 
 ## What this repository contains
@@ -148,12 +152,21 @@ Development happens on Codeberg:
 
 - https://codeberg.org/CE-RISE-software/dp-engineering-assistant
 
+The documentation site is published from the Codeberg repository:
+
+- https://ce-rise-software.codeberg.page/dp-engineering-assistant/
+
 The GitHub repository is a mirror used for release-side automation, following the same CE-RISE MCP publication pattern used by `dp-assessment-workbench`:
 
 - build and publish the MCP OCI image to GitHub Container Registry;
 - update `server.json` for the release version and image tag;
 - publish the MCP server metadata to the official MCP Registry using GitHub OIDC;
 - create GitHub releases for Zenodo integration.
+
+After release, the server is expected to be reachable in two ways:
+
+- MCP Registry and OCI package: MCP clients can discover the stdio server by the registry identity below and run the published GHCR image.
+- MCPO/OpenAPI gateway: when registered behind the CE-RISE MCPO gateway, HTTP/OpenAPI clients can reach the same MCP tools through the gateway endpoint published in the project documentation. The gateway URL is deployment metadata and is not hardcoded in this repository.
 
 The MCP registry identity is:
 

@@ -19,7 +19,7 @@
     "Model Context Protocol",
     "MCP"
   ],
-  "notes": "v0.0.1 - Initial MCP server setup with deterministic CE-RISE solution catalog.",
+  "notes": "v0.0.1 - Initial release of the CE-RISE Digital Passport Engineering Assistant MCP server.",
   "communities": [
     { "identifier": "ce-rise" },
     { "identifier": "impact" }

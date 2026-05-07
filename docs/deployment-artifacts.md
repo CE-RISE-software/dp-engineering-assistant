@@ -17,7 +17,7 @@ The generated files are returned as structured MCP content:
 - `description`: short file purpose;
 - `content`: complete file content.
 
-`generate_deployment_artifact_plan` and `generate_deployment_artifacts` accept `check_remote_updates`. When this is true, the same generation call checks configured update channels and returns a `version_context`. Generated artifact sets also include `VERSION-CONTEXT.md`. Checked model tags are used where they map cleanly to generated registry catalog entries.
+`generate_deployment_artifact_plan` and `generate_deployment_artifacts` accept `check_remote_updates`. When this is true, the same generation call checks configured update channels and returns a `version_context`. Generated artifact sets also include `VERSION-CONTEXT.md`. Checked `model_artifact_version` tags are used where they map cleanly to generated registry catalog entries. Model architecture documentation and model template channels remain visible in version context but are not emitted as registry catalog model entries.
 
 The server does not write these files to disk and does not deploy anything.
 
