@@ -19,7 +19,7 @@
     "Model Context Protocol",
     "MCP"
   ],
-  "notes": "v0.0.1 - Initial release of the CE-RISE Digital Passport Engineering Assistant MCP server.",
+  "notes": "v0.0.2 - SEE Impacts engineering and deployment integration.",
   "communities": [
     { "identifier": "ce-rise" },
     { "identifier": "impact" }

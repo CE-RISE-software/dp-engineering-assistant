@@ -9,7 +9,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 SUPPORTED_PROTOCOL_VERSIONS = (
     "2024-11-05",

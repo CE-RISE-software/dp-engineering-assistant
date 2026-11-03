@@ -7,11 +7,11 @@
     "url": "https://github.com/CE-RISE-software/dp-engineering-assistant",
     "source": "github"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/ce-rise-software/dp-engineering-assistant-mcp:0.0.1",
+      "identifier": "ghcr.io/ce-rise-software/dp-engineering-assistant-mcp:0.0.2",
       "transport": {
         "type": "stdio"
       }
