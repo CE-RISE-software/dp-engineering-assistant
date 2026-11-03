@@ -98,6 +98,23 @@ Adoption, architecture, value-chain, and roadmap outputs include `source_referen
 
 Deployment artifact outputs are starter planning artifacts only. They do not replace the canonical `dp-system-gitops-template` repository or the component-specific deployment documentation.
 
+The deployment tools support RE Indicators and SEE Impacts independently or together. Select
+`see_impacts_calculation_service` in `selected_components`, or pass `include_see_impacts: true`,
+to include SEE in the generated Compose and Kubernetes files. The files use pinned service images
+from the GitOps template. Kubernetes outputs include SEE-only and, when both services are selected,
+combined calculation overlays.
+
+For environmental footprint workflows, the assistant points to Product System and LCI Dataset
+inputs, the caller's functional unit, and the complete Integrated LCA output containing all
+25 configured indicators. SEE supplies the shared BONSAI background and fixed EF 3.1 methods;
+these are service configuration, not per-request characterization-factor inputs. The assistant
+can inspect SEE's health, capabilities, methods, and OpenAPI endpoints but does not run calculations.
+
+The local demonstrator provides chair, laptop RE-indicator, and PV impact workflows. The PV case
+demonstrates numerical comparison, live input/output validation, and persistence; it does not limit
+SEE to photovoltaic products. See [`examples/02-deployment-artifacts`](examples/02-deployment-artifacts)
+for an environmental footprint deployment request.
+
 Compliance-oriented outputs are planning aids only. They do not provide legal certification or legal advice.
 
 ## Local Use

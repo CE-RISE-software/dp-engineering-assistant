@@ -48,7 +48,7 @@
       "repository_url": "https://codeberg.org/CE-RISE-software/dp-system-local-demonstrator",
       "documentation_url": null,
       "source_role": "Existing local demonstration workflow used as a reference example for trying CE-RISE Digital Passport components together and generalizing reusable patterns.",
-      "key_files": ["README.md", "AGENTS.md", "Makefile", "demo.sh", "compose/README.md", "compose/docker-compose.yml", "payloads/dp_valid.json", "payloads/dp_invalid.json"]
+      "key_files": ["README.md", "AGENTS.md", "Makefile", "demo.sh", "compose/README.md", "compose/docker-compose.yml", "payloads/dp_valid.json", "payloads/dp_invalid.json", "payloads/see-impacts/product-system.json", "payloads/see-impacts/lci-dataset.json", "payloads/see-impacts/expected-integrated-lca.json"]
     },
     {
       "id": "dp_system_gitops_template",
@@ -60,7 +60,7 @@
       "repository_url": "https://codeberg.org/CE-RISE-software/dp-system-gitops-template",
       "documentation_url": "https://ce-rise-software.codeberg.page/dp-system-gitops-template/",
       "source_role": "Existing CE-RISE template for repeatable Digital Passport system deployment planning.",
-      "key_files": ["README.md", "AGENTS.md", "docs/index.md", "docs/architecture.md", "docs/configuration.md", "docs/deployment.md", "docs/operations.md", "compose/README.md", "k8s/README.md"]
+      "key_files": ["README.md", "AGENTS.md", "docs/index.md", "docs/architecture.md", "docs/configuration.md", "docs/deployment.md", "docs/operations.md", "compose/docker-compose.yml", "compose/.env.example", "compose/registry/catalog.json", "k8s/extensions/see-impacts/kustomization.yaml", "k8s/extensions/see-impacts/deployment.yaml", "k8s/overlays/dev-calculations/kustomization.yaml", "k8s/overlays/prod-calculations/kustomization.yaml"]
     },
     {
       "id": "re_indicators_calculation_service",
@@ -73,6 +73,54 @@
       "documentation_url": "https://ce-rise-software.codeberg.page/re-indicators-calculation-service/",
       "source_role": "Existing CE-RISE service for resource-efficiency indicator calculation workflows.",
       "key_files": ["README.md", "Cargo.toml", "docs/index.md", "docs/api-overview.md", "docs/api-reference.md", "docs/local-testing.md", "docs/integration.md", "payloads/recycle_battery_compute_request.json"]
+    },
+    {
+      "id": "see_impacts_calculation_service",
+      "component_id": "see_impacts_calculation_service",
+      "title": "SEE Impacts Calculation Service",
+      "kind": "service-repository",
+      "connection_modes": ["local_repository", "documentation_url", "containerized_service"],
+      "local_path": "../see-impacts-calculation-service",
+      "repository_url": "https://codeberg.org/CE-RISE-software/see-impacts-calculation-service",
+      "documentation_url": "https://ce-rise-software.codeberg.page/see-impacts-calculation-service/",
+      "source_role": "Product-neutral environmental footprint service: Product System and LCI Dataset inputs, one calculation request, and a complete Integrated LCA result with all configured indicators or a diagnostic. Uses its supplied BONSAI background and fixed EF 3.1 methods.",
+      "key_files": ["README.md", "pyproject.toml", "docs/index.md", "docs/api-overview.md", "docs/api-reference.md", "docs/integration.md", "docs/deployment.md", "docs/pv-example.md"]
+    },
+    {
+      "id": "product_system_model",
+      "component_id": "ce_rise_models",
+      "title": "Product System Model",
+      "kind": "model-repository",
+      "connection_modes": ["local_repository", "documentation_url", "model_assets"],
+      "local_path": "../../CE-RISE-models/product-system",
+      "repository_url": "https://codeberg.org/CE-RISE-models/product-system",
+      "documentation_url": "https://ce-rise-models.codeberg.page/product-system/",
+      "source_role": "SEE input model describing the assessed product system and its activity references; the calculation request also declares the functional unit.",
+      "key_files": ["README.md", "CHANGELOG.md", "CITATION.cff"]
+    },
+    {
+      "id": "lci_dataset_model",
+      "component_id": "ce_rise_models",
+      "title": "LCI Dataset Model",
+      "kind": "model-repository",
+      "connection_modes": ["local_repository", "documentation_url", "model_assets"],
+      "local_path": "../../CE-RISE-models/lci-dataset",
+      "repository_url": "https://codeberg.org/CE-RISE-models/lci-dataset",
+      "documentation_url": "https://ce-rise-models.codeberg.page/lci-dataset/",
+      "source_role": "SEE input model for foreground inventory activities, exchanges, and references to background activities.",
+      "key_files": ["README.md", "CHANGELOG.md", "CITATION.cff"]
+    },
+    {
+      "id": "integrated_lca_model",
+      "component_id": "ce_rise_models",
+      "title": "Integrated LCA Model",
+      "kind": "model-repository",
+      "connection_modes": ["local_repository", "documentation_url", "model_assets"],
+      "local_path": "../../CE-RISE-models/integrated-lca",
+      "repository_url": "https://codeberg.org/CE-RISE-models/integrated-lca",
+      "documentation_url": "https://ce-rise-models.codeberg.page/integrated-lca/",
+      "source_role": "SEE output model for the complete environmental assessment result, including impact indicators and methodology metadata.",
+      "key_files": ["README.md", "CHANGELOG.md", "CITATION.cff"]
     },
     {
       "id": "ce_rise_models_index",

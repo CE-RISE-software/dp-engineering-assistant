@@ -21,6 +21,10 @@ Version-sensitive facts live in configured update channels:
 
 Use `list_update_channels` to inspect the configured channels, then `check_update_channels` when current metadata is needed. Use `build_update_aware_solution_context` when a workflow should combine stable component guidance with optional current upstream metadata.
 
+Configured channels include SEE Impacts releases and published artifact tags for Product System,
+LCI Dataset, and Integrated LCA. Generated files use pinned GitOps service images; release checks
+provide metadata for the operator's review without automatically changing those image tags.
+
 Generation tools can also carry this context directly. For deployment artifact generation, pass `check_remote_updates: true` to `generate_deployment_artifact_plan` or `generate_deployment_artifacts`. The result includes `version_context`, and generated artifact sets include `VERSION-CONTEXT.md`. Where a checked `model_artifact_version` tag maps cleanly to registry catalog fields, the generated registry catalog uses the checked version. Model template and architecture/documentation channels are included in version context but excluded from registry catalog entries.
 
 See `examples/03-update-aware-generation` for a request and expected response shape.

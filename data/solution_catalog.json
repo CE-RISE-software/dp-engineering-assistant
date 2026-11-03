@@ -88,7 +88,16 @@
       "title": "Shared information value opportunities",
       "description": "Identify practical value opportunities from shared Digital Passport information, including reporting efficiency, traceability, circularity services, and data quality improvements.",
       "keywords": ["value", "opportunity", "shared", "information", "circularity", "traceability", "efficiency", "reporting"],
-      "related_components": ["re_indicators_calculation_service", "hex_core_service"],
+      "related_components": ["re_indicators_calculation_service", "see_impacts_calculation_service", "hex_core_service"],
+      "mvp_supported": true
+    },
+    {
+      "id": "environmental_footprint_workflow",
+      "family": "implementation",
+      "title": "Environmental footprint calculation integration",
+      "description": "Select and configure the SEE Impacts service for environmental footprint assessment using Product System and LCI Dataset inputs and a complete Integrated LCA result.",
+      "keywords": ["environmental", "footprint", "impacts", "assessment", "lca", "bonsai", "ef", "see"],
+      "related_components": ["see_impacts_calculation_service", "ce_rise_models", "hex_core_service", "dp_system_gitops_template", "dp_system_local_demonstrator"],
       "mvp_supported": true
     }
   ],
@@ -155,6 +164,15 @@
       "url": "https://ce-rise-software.codeberg.page/re-indicators-calculation-service/",
       "description": "Existing CE-RISE service asset for resource efficiency indicator calculation workflows.",
       "assistant_role": "Use when a Digital Passport workflow needs CE-RISE circularity or resource-efficiency indicator calculation."
+    },
+    {
+      "id": "see_impacts_calculation_service",
+      "name": "SEE Impacts Calculation Service",
+      "kind": "service",
+      "repository": "https://codeberg.org/CE-RISE-software/see-impacts-calculation-service",
+      "url": "https://ce-rise-software.codeberg.page/see-impacts-calculation-service/",
+      "description": "Environmental footprint calculation service using CE-RISE Product System and LCI Dataset inputs, BONSAI background data, and fixed EF 3.1 characterization factors. One request returns all 25 configured indicators in a validated Integrated LCA object or a calculation diagnostic.",
+      "assistant_role": "Guide service selection, input/output model configuration, and deployment for environmental footprint workflows. The service is product-neutral; the PV demonstrator is a reference example, not a product restriction."
     }
   ],
   "architecture_patterns": [
@@ -185,6 +203,13 @@
       "description": "Use the existing CE-RISE GitOps template after local validation and component selection have produced a stable deployment plan.",
       "best_for": ["deployment planning", "production preparation", "repeatable environment setup"],
       "component_sequence": ["dp_system_local_demonstrator", "dp_system_gitops_template", "hex_core_service", "dp_storage_jsondb_service"]
+    },
+    {
+      "id": "environmental_footprint_integration",
+      "title": "Environmental footprint service integration",
+      "description": "Connect Product System and LCI Dataset records to SEE Impacts, validate the complete Integrated LCA output through HEX Core, and select storage and deployment settings for the adopter's workflow.",
+      "best_for": ["environmental footprint", "impact assessment", "lca", "bonsai", "see impacts"],
+      "component_sequence": ["ce_rise_models", "hex_core_service", "see_impacts_calculation_service", "dp_storage_jsondb_service", "dp_system_gitops_template"]
     }
   ],
   "adoption_context_fields": [

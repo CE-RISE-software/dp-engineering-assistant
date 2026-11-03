@@ -58,6 +58,36 @@
       "update_role": "software_component_version"
     },
     {
+      "id": "see_impacts_calculation_service_codeberg_releases",
+      "component_id": "see_impacts_calculation_service",
+      "source_id": "see_impacts_calculation_service",
+      "kind": "gitea_releases",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-software/see-impacts-calculation-service/releases",
+      "title": "SEE Impacts Calculation Service Codeberg releases",
+      "description": "Current release metadata for the CE-RISE environmental footprint calculation service.",
+      "update_role": "software_component_version"
+    },
+    {
+      "id": "product_system_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "product_system_model",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/product-system/tags",
+      "title": "Product System model tags",
+      "description": "Published model artifact versions for SEE product system inputs.",
+      "update_role": "model_artifact_version"
+    },
+    {
+      "id": "lci_dataset_tags",
+      "component_id": "ce_rise_models",
+      "source_id": "lci_dataset_model",
+      "kind": "gitea_tags",
+      "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/lci-dataset/tags",
+      "title": "LCI Dataset model tags",
+      "description": "Published model artifact versions for SEE foreground inventory inputs.",
+      "update_role": "model_artifact_version"
+    },
+    {
       "id": "ce_rise_models_codeberg_repositories",
       "component_id": "ce_rise_models",
       "source_id": "ce_rise_models_index",
@@ -130,7 +160,7 @@
     {
       "id": "integrated_lca_tags",
       "component_id": "ce_rise_models",
-      "source_id": "ce_rise_models_index",
+      "source_id": "integrated_lca_model",
       "kind": "gitea_tags",
       "url": "https://codeberg.org/api/v1/repos/CE-RISE-models/integrated-lca/tags",
       "title": "Integrated LCA model tags",

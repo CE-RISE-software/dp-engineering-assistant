@@ -5,10 +5,10 @@ The server can return starter deployment files through `generate_deployment_arti
 These outputs are derived from the existing CE-RISE Digital Passport System GitOps Template:
 
 - Docker Compose baseline with `hex-core-service`;
-- optional Compose profiles for `internal-adapter` and `re-indicators-calculation-service`;
+- optional Compose profiles for the internal adapter, RE Indicators, and SEE Impacts;
 - Kubernetes base aligned with the existing template's overlay workflow;
 - development and production overlays;
-- optional Kubernetes extension for RE indicators.
+- optional Kubernetes extensions for RE Indicators and SEE Impacts, with individual and combined overlays.
 
 The generated files are returned as structured MCP content:
 
@@ -21,6 +21,26 @@ The generated files are returned as structured MCP content:
 
 The server does not write these files to disk and does not deploy anything.
 
+Both deployment tools accept `include_see_impacts`, independently of `include_re_indicators`.
+If omitted, each option follows the corresponding service in `selected_components`. An explicit
+`false` excludes that service. SEE generation includes:
+
+- the `see-impacts` Compose profile, exposing the service on `127.0.0.1:8084` by default;
+- Product System `0.0.1`, LCI Dataset `0.0.1`, and Integrated LCA `0.2.0` registry entries;
+- HEX Core connection and bearer-token settings, request/calculation timeouts, and concurrency;
+- a writable Brightway workspace, service probes, and a cluster-local Kubernetes Service;
+- `dev-see-impacts` and `prod-see-impacts` overlays;
+- `dev-calculations` and `prod-calculations` overlays when RE Indicators is also selected.
+
+Service image defaults match the GitOps template: HEX Core `v0.0.9`, JSONDB storage `v0.0.1`,
+RE Indicators `v0.0.1`, and SEE Impacts `v0.0.1`. Remote release checks report current metadata;
+they do not automatically replace these image pins. Checked model artifact tags can update the
+generated registry entries.
+
+When HEX Core requires authentication, configure `SEE_IMPACTS_HEX_CORE_BEARER_TOKEN` for Compose,
+or supply a `see-impacts-auth` Secret containing `HEX_CORE_BEARER_TOKEN` in the Kubernetes namespace.
+The Secret is operator-managed and is not generated with credentials.
+
 ## Recommended Flow
 
 1. Use `generate_deployment_artifact_plan` to map the adoption context and selected CE-RISE services to artifact profiles.
@@ -28,7 +48,8 @@ The server does not write these files to disk and does not deploy anything.
 3. Use `generate_deployment_artifacts` to return starter files.
 4. Validate and adapt those files against the canonical `dp-system-gitops-template` repository.
 
-The concrete Digital Passport scenario in `examples/02-deployment-artifacts` shows the expected profile selection and file list for a Compose plus Kubernetes output set with the RE indicators extension enabled.
+The scenarios in `examples/02-deployment-artifacts` show RE Indicators and SEE Impacts selections
+for Compose and Kubernetes, including the combined calculation overlays.
 
 ## Boundary
 

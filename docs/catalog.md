@@ -6,7 +6,7 @@ The catalog is deliberately small and deterministic. It is not a source of truth
 
 The connected-source layer is backed by `data/connected_sources.json`. It records curated links to CE-RISE repositories, documentation sites, model assets, and service references that ground the assistant's guidance.
 
-The live service discovery layer is backed by `data/live_service_connections.json`. It records read-only GET probes for health, readiness, version, and OpenAPI discovery.
+The live service discovery layer is backed by `data/live_service_connections.json`. It records read-only GET probes for health, readiness, version, OpenAPI discovery, and SEE capabilities and assessment methods.
 
 The deployment artifact layer is backed by `data/deployment_artifacts.json`. It records Compose and Kubernetes starter artifact profiles derived from the existing CE-RISE GitOps deployment template.
 
@@ -40,6 +40,13 @@ The initial catalog includes:
 - Digital Passport System GitOps Template
 - CE-RISE Models
 - RE Indicators Calculation Service
+- SEE Impacts Calculation Service
+
+Environmental footprint guidance connects the SEE service to the published Product System,
+LCI Dataset, and Integrated LCA model repositories. Its deployment catalog pins these models to
+`0.0.1`, `0.0.1`, and `0.2.0`, respectively; explicit remote update checks can resolve newer
+published artifact versions for review. SEE's service description distinguishes its shared BONSAI
+background and fixed EF 3.1 methods from the adopter's foreground inputs and functional unit.
 
 This list is expected to grow as the server is connected to more detailed CE-RISE documentation and workflows.
 

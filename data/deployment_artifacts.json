@@ -13,7 +13,14 @@
     "k8s/base/registry-configmap.yaml",
     "k8s/overlays/dev/kustomization.yaml",
     "k8s/overlays/prod/kustomization.yaml",
-    "k8s/extensions/re-indicators/kustomization.yaml"
+    "k8s/extensions/re-indicators/kustomization.yaml",
+    "k8s/extensions/see-impacts/kustomization.yaml",
+    "k8s/extensions/see-impacts/deployment.yaml",
+    "k8s/extensions/see-impacts/service.yaml",
+    "k8s/overlays/dev-see-impacts/kustomization.yaml",
+    "k8s/overlays/prod-see-impacts/kustomization.yaml",
+    "k8s/overlays/dev-calculations/kustomization.yaml",
+    "k8s/overlays/prod-calculations/kustomization.yaml"
   ],
   "artifact_templates": [
     {
@@ -24,7 +31,7 @@
       "best_for": ["local deployment rehearsal", "configuration review", "handover from a generalized reference-example workflow"],
       "included_files": ["compose/docker-compose.yml", "compose/.env.example", "compose/registry/catalog.json", "compose/README.md"],
       "service_components": ["hex_core_service"],
-      "source_files": ["compose/docker-compose.yml", "compose/.env.example", "compose/registry/catalog.json", "compose/README.md"],
+      "source_files": ["compose/docker-compose.yml", "compose/.env.example", "compose/registry/catalog.json"],
       "assumptions": [
         "HEX Core Service is the public-facing service.",
         "The IO adapter is external unless the internal adapter profile is explicitly enabled.",
@@ -60,6 +67,21 @@
       ]
     },
     {
+      "id": "compose_see_impacts_profile",
+      "target": "compose",
+      "title": "Docker Compose SEE Impacts profile",
+      "description": "An optional environmental footprint service beside HEX Core, with its own writable calculation workspace and loopback-only host port.",
+      "best_for": ["environmental footprint integration", "assessment workflow configuration"],
+      "included_files": ["compose/docker-compose.yml", "compose/.env.example", "compose/registry/catalog.json"],
+      "service_components": ["see_impacts_calculation_service"],
+      "source_files": ["compose/docker-compose.yml", "compose/.env.example", "compose/registry/catalog.json"],
+      "assumptions": [
+        "The service validates Product System and LCI Dataset inputs and Integrated LCA outputs through HEX Core.",
+        "The released image supplies the shared BONSAI background and fixed EF 3.1 methods; the adopter supplies its own foreground and functional unit.",
+        "SEE and RE Indicators can be selected independently or together."
+      ]
+    },
+    {
       "id": "kubernetes_base",
       "target": "kubernetes",
       "title": "Kubernetes base",
@@ -67,7 +89,7 @@
       "best_for": ["repeatable deployment preparation", "GitOps baseline", "environment overlay setup"],
       "included_files": ["k8s/base/kustomization.yaml", "k8s/base/hex-core-deployment.yaml", "k8s/base/hex-core-service.yaml", "k8s/base/registry-configmap.yaml", "k8s/base/auth-secret.example.yaml", "k8s/README.md"],
       "service_components": ["hex_core_service"],
-      "source_files": ["k8s/base/kustomization.yaml", "k8s/base/hex-core-deployment.yaml", "k8s/base/hex-core-service.yaml", "k8s/base/registry-configmap.yaml", "k8s/base/auth-secret.example.yaml", "k8s/README.md"],
+      "source_files": ["k8s/base/kustomization.yaml", "k8s/base/hex-core-deployment.yaml", "k8s/base/hex-core-service.yaml", "k8s/base/registry-configmap.yaml", "k8s/base/auth-secret.example.yaml"],
       "assumptions": [
         "Environment-specific behavior belongs in overlays.",
         "Secrets are represented explicitly as examples and should be replaced by the operator's secret management workflow."
@@ -114,6 +136,31 @@
         "The RE indicators service is optional and remains separate from the HEX Core Service deployment.",
         "The extension should only be included when the passport workflow needs resource-efficiency indicator calculation."
       ]
+    },
+    {
+      "id": "kubernetes_see_impacts_extension",
+      "target": "kubernetes",
+      "title": "SEE Impacts deployment extension",
+      "description": "An optional environmental footprint service with a writable workspace, health/readiness probes, and an optional HEX Core bearer-token Secret.",
+      "best_for": ["environmental footprint service integration", "assessment deployment preparation"],
+      "included_files": ["k8s/extensions/see-impacts/kustomization.yaml", "k8s/extensions/see-impacts/deployment.yaml", "k8s/extensions/see-impacts/service.yaml", "k8s/overlays/dev-see-impacts/kustomization.yaml", "k8s/overlays/prod-see-impacts/kustomization.yaml"],
+      "service_components": ["see_impacts_calculation_service"],
+      "source_files": ["k8s/extensions/see-impacts/kustomization.yaml", "k8s/extensions/see-impacts/deployment.yaml", "k8s/extensions/see-impacts/service.yaml", "k8s/overlays/dev-see-impacts/kustomization.yaml", "k8s/overlays/prod-see-impacts/kustomization.yaml"],
+      "assumptions": [
+        "SEE remains a separate service and uses HEX Core for model validation.",
+        "The operator supplies a see-impacts-auth Secret containing HEX_CORE_BEARER_TOKEN when HEX Core requires authentication."
+      ]
+    },
+    {
+      "id": "kubernetes_calculations_overlays",
+      "target": "kubernetes",
+      "title": "Combined calculation service overlays",
+      "description": "Development and production overlays selecting both RE Indicators and SEE Impacts.",
+      "best_for": ["combined circularity and environmental assessment workflows"],
+      "included_files": ["k8s/overlays/dev-calculations/kustomization.yaml", "k8s/overlays/prod-calculations/kustomization.yaml"],
+      "service_components": ["re_indicators_calculation_service", "see_impacts_calculation_service"],
+      "source_files": ["k8s/overlays/dev-calculations/kustomization.yaml", "k8s/overlays/prod-calculations/kustomization.yaml"],
+      "assumptions": ["Both calculation extensions are selected explicitly for the adopter's workflow."]
     }
   ],
   "readiness_fields": [
@@ -154,8 +201,9 @@
     }
   ],
   "default_images": {
-    "hex_core_service": "rg.fr-par.scw.cloud/ce-rise-software/hex-core-service:latest",
-    "dp_storage_jsondb_service": "rg.fr-par.scw.cloud/ce-rise-software/dp-storage-jsondb:latest",
-    "re_indicators_calculation_service": "rg.fr-par.scw.cloud/ce-rise-software/re-indicators-calculation:latest"
+    "hex_core_service": "rg.fr-par.scw.cloud/ce-rise-software/hex-core-service:v0.0.9",
+    "dp_storage_jsondb_service": "rg.fr-par.scw.cloud/ce-rise-software/dp-storage-jsondb:v0.0.1",
+    "re_indicators_calculation_service": "rg.fr-par.scw.cloud/ce-rise-software/re-indicators-calculation:v0.0.1",
+    "see_impacts_calculation_service": "rg.fr-par.scw.cloud/ce-rise-software/see-impacts-calculation:v0.0.1"
   }
 }

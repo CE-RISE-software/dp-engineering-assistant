@@ -97,3 +97,44 @@ kubectl kustomize k8s/overlays/prod-re-indicators
 ```
 
 These outputs are starter artifacts for planning and review. They should be reconciled with the canonical `dp-system-gitops-template` repository before deployment.
+
+## Environmental Footprint Deployment
+
+For a product family requiring environmental footprint assessment, select SEE Impacts:
+
+```json
+{
+  "target": "both",
+  "project_name": "environmental passport pilot",
+  "selected_components": ["hex_core_service", "see_impacts_calculation_service"],
+  "include_see_impacts": true,
+  "external_io_adapter_url": "https://io-adapter.example.org"
+}
+```
+
+Use this selection with `generate_deployment_artifact_plan` or `generate_deployment_artifacts`.
+It adds the `compose_see_impacts_profile` and `kubernetes_see_impacts_extension` templates,
+the `see-impacts` Compose profile, and the following Kubernetes files:
+
+- `k8s/extensions/see-impacts/kustomization.yaml`
+- `k8s/extensions/see-impacts/deployment.yaml`
+- `k8s/extensions/see-impacts/service.yaml`
+- `k8s/overlays/dev-see-impacts/kustomization.yaml`
+- `k8s/overlays/prod-see-impacts/kustomization.yaml`
+
+The generated registry includes Product System, LCI Dataset, and Integrated LCA. The caller
+supplies its foreground records and functional unit to the SEE service, whose released image
+provides the BONSAI background and fixed EF 3.1 methods. The MCP server does not call `/compute`.
+
+Add `"include_re_indicators": true` to the same request to generate both services. Kubernetes
+outputs then also include `dev-calculations` and `prod-calculations` overlays. Validation commands
+include:
+
+```bash
+docker compose -f compose/docker-compose.yml --env-file compose/.env.example --profile re-indicators --profile see-impacts config
+kubectl kustomize k8s/overlays/dev-calculations
+kubectl kustomize k8s/overlays/prod-calculations
+```
+
+Before deployment, provide the SEE-to-HEX Core token when authentication is required and review
+the generated service settings against the GitOps template and SEE documentation.

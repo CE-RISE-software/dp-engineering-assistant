@@ -109,6 +109,22 @@
       "blocked_endpoint_patterns": [
         "POST /compute"
       ]
+    },
+    {
+      "id": "see_impacts_calculation_service_local",
+      "component_id": "see_impacts_calculation_service",
+      "title": "SEE Impacts Calculation Service local endpoint",
+      "service_family": "calculation",
+      "default_base_url": "http://127.0.0.1:8084",
+      "source_id": "see_impacts_calculation_service",
+      "description": "Read-only discovery of the environmental footprint service and its configured assessment methods; no calculation requests are sent.",
+      "safe_endpoints": [
+        {"id": "health", "method": "GET", "path": "/health", "purpose": "Liveness probe"},
+        {"id": "capabilities", "method": "GET", "path": "/capabilities", "purpose": "Configured background and calculation capabilities"},
+        {"id": "methods", "method": "GET", "path": "/methods", "purpose": "Configured environmental assessment methods"},
+        {"id": "openapi", "method": "GET", "path": "/openapi.json", "purpose": "Machine-readable OpenAPI document"}
+      ],
+      "blocked_endpoint_patterns": ["POST /compute"]
     }
   ]
 }

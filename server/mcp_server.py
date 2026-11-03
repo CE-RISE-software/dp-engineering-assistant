@@ -1328,11 +1328,16 @@ def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str,
         "include_re_indicators",
         default="re_indicators_calculation_service" in selected_components,
     )
+    include_see_impacts = _bool_arg(
+        arguments,
+        "include_see_impacts",
+        default="see_impacts_calculation_service" in selected_components,
+    )
     include_internal_adapter = _bool_arg(arguments, "include_internal_adapter", default=False)
     check_remote_updates = _bool_arg(arguments, "check_remote_updates", default=False)
     timeout_seconds = _update_timeout_arg(arguments, "timeout_seconds")
     manifest = _load_deployment_artifacts()
-    profile_ids = _deployment_profile_ids(target, include_re_indicators, include_internal_adapter)
+    profile_ids = _deployment_profile_ids(target, include_re_indicators, include_internal_adapter, include_see_impacts)
     templates = _deployment_templates_by_ids(manifest, profile_ids)
     service_components = _unique_strings(
         component
@@ -1359,6 +1364,7 @@ def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str,
             "adoption_context": adoption_context,
             "selected_components": selected_components,
             "include_re_indicators": include_re_indicators,
+            "include_see_impacts": include_see_impacts,
             "include_internal_adapter": include_internal_adapter,
             "check_remote_updates": check_remote_updates,
             "timeout_seconds": timeout_seconds,
@@ -1377,6 +1383,7 @@ def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str,
                 "Confirm model registry catalog entries and allowed artifact hosts.",
                 "Confirm authentication mode and secret management before production use.",
                 "Confirm whether the RE Indicators Calculation Service is needed for this workflow.",
+                "Confirm whether SEE Impacts is needed; register Product System, LCI Dataset, and Integrated LCA models and configure its HEX Core authentication, workspace, and calculation limits.",
                 "Run generated artifacts through the canonical template validation commands before deployment.",
             ],
             "next_tools": [
@@ -1407,6 +1414,11 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
         "include_re_indicators",
         default="re_indicators_calculation_service" in selected_components,
     )
+    include_see_impacts = _bool_arg(
+        arguments,
+        "include_see_impacts",
+        default="see_impacts_calculation_service" in selected_components,
+    )
     include_internal_adapter = _bool_arg(arguments, "include_internal_adapter", default=False)
     external_io_adapter_url = (
         _string_arg(arguments, "external_io_adapter_url", required=False)
@@ -1414,7 +1426,7 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
     )
     auth_mode = _string_arg(arguments, "auth_mode", required=False) or "jwt_jwks"
     manifest = _load_deployment_artifacts()
-    profile_ids = _deployment_profile_ids(target, include_re_indicators, include_internal_adapter)
+    profile_ids = _deployment_profile_ids(target, include_re_indicators, include_internal_adapter, include_see_impacts)
     templates = _deployment_templates_by_ids(manifest, profile_ids)
     service_components = _unique_strings(
         component
@@ -1437,6 +1449,7 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
                 external_io_adapter_url=external_io_adapter_url,
                 auth_mode=auth_mode,
                 include_re_indicators=include_re_indicators,
+                include_see_impacts=include_see_impacts,
                 include_internal_adapter=include_internal_adapter,
                 version_context=version_context,
             )
@@ -1447,6 +1460,7 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
                 project_name=project_name,
                 external_io_adapter_url=external_io_adapter_url,
                 include_re_indicators=include_re_indicators,
+                include_see_impacts=include_see_impacts,
                 version_context=version_context,
             )
         )
@@ -1466,6 +1480,7 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
             "environment": environment,
             "selected_components": selected_components,
             "include_re_indicators": include_re_indicators,
+            "include_see_impacts": include_see_impacts,
             "include_internal_adapter": include_internal_adapter,
             "external_io_adapter_url": external_io_adapter_url,
             "auth_mode": auth_mode,
@@ -1484,6 +1499,7 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
             "validation_commands": _deployment_validation_commands(
                 target,
                 include_re_indicators=include_re_indicators,
+                include_see_impacts=include_see_impacts,
                 include_internal_adapter=include_internal_adapter,
             ),
             "limitations": [
@@ -2170,6 +2186,7 @@ def _deployment_profile_ids(
     target: str,
     include_re_indicators: bool,
     include_internal_adapter: bool,
+    include_see_impacts: bool,
 ) -> list[str]:
     profile_ids: list[str] = []
     if target in {"compose", "both"}:
@@ -2178,6 +2195,8 @@ def _deployment_profile_ids(
             profile_ids.append("compose_internal_adapter_profile")
         if include_re_indicators:
             profile_ids.append("compose_re_indicators_profile")
+        if include_see_impacts:
+            profile_ids.append("compose_see_impacts_profile")
     if target in {"kubernetes", "both"}:
         profile_ids.extend(
             [
@@ -2188,6 +2207,10 @@ def _deployment_profile_ids(
         )
         if include_re_indicators:
             profile_ids.append("kubernetes_re_indicators_extension")
+        if include_see_impacts:
+            profile_ids.append("kubernetes_see_impacts_extension")
+        if include_re_indicators and include_see_impacts:
+            profile_ids.append("kubernetes_calculations_overlays")
     return profile_ids
 
 
@@ -2219,6 +2242,7 @@ def _generate_compose_artifacts(
     external_io_adapter_url: str,
     auth_mode: str,
     include_re_indicators: bool,
+    include_see_impacts: bool,
     include_internal_adapter: bool,
     version_context: dict[str, object],
 ) -> list[dict[str, object]]:
@@ -2260,12 +2284,44 @@ def _generate_compose_artifacts(
     ports:
       - "${RE_INDICATORS_CALC_PORT}:8081"
 """
+    if include_see_impacts:
+        compose += """
+  see-impacts-calculation-service:
+    profiles:
+      - see-impacts
+    image: ${SEE_IMPACTS_CALC_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      hex-core-service:
+        condition: service_started
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      HEX_CORE_BASE_URL: ${SEE_IMPACTS_HEX_CORE_BASE_URL:-http://hex-core-service:8080}
+      HEX_CORE_BEARER_TOKEN: ${SEE_IMPACTS_HEX_CORE_BEARER_TOKEN:-}
+      HTTP_TIMEOUT_SECS: ${SEE_IMPACTS_HTTP_TIMEOUT_SECS:-30}
+      CALCULATION_TIMEOUT_SECS: ${SEE_IMPACTS_CALCULATION_TIMEOUT_SECS:-900}
+      MAX_CONCURRENT_CALCULATIONS: ${SEE_IMPACTS_MAX_CONCURRENT_CALCULATIONS:-2}
+      BRIGHTWAY_WORKSPACE_DIR: /var/lib/see-impacts/brightway
+    ports:
+      - "127.0.0.1:${SEE_IMPACTS_CALC_PORT:-8084}:8080"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/capabilities', timeout=20).read()"
+      interval: 30s
+      timeout: 25s
+      retries: 3
+      start_period: 30s
+"""
     if include_internal_adapter:
         compose += """
   io-adapter:
     profiles:
       - internal-adapter
-    image: ${IO_ADAPTER_IMAGE:-rg.fr-par.scw.cloud/ce-rise-software/dp-storage-jsondb:latest}
+    image: ${IO_ADAPTER_IMAGE}
     restart: unless-stopped
 """
     return [
@@ -2288,7 +2344,7 @@ def _generate_compose_artifacts(
         ),
         _artifact_file(
             "compose/README.md",
-            _compose_readme(include_re_indicators, include_internal_adapter),
+            _compose_readme(include_re_indicators, include_internal_adapter, include_see_impacts),
             "Compose usage notes for the generated starter artifact.",
             mime_type="text/markdown",
         ),
@@ -2296,14 +2352,17 @@ def _generate_compose_artifacts(
 
 
 def _compose_env_example(external_io_adapter_url: str, auth_mode: str) -> str:
+    images = _load_deployment_artifacts()["default_images"]
     return f"""# Image references
-HEX_CORE_IMAGE=rg.fr-par.scw.cloud/ce-rise-software/hex-core-service:latest
-RE_INDICATORS_CALC_IMAGE=rg.fr-par.scw.cloud/ce-rise-software/re-indicators-calculation:latest
-IO_ADAPTER_IMAGE=rg.fr-par.scw.cloud/ce-rise-software/dp-storage-jsondb:latest
+HEX_CORE_IMAGE={images['hex_core_service']}
+RE_INDICATORS_CALC_IMAGE={images['re_indicators_calculation_service']}
+SEE_IMPACTS_CALC_IMAGE={images['see_impacts_calculation_service']}
+IO_ADAPTER_IMAGE={images['dp_storage_jsondb_service']}
 
 # Public exposure
 HEX_CORE_PORT=8080
 RE_INDICATORS_CALC_PORT=8083
+SEE_IMPACTS_CALC_PORT=8084
 
 # Core runtime
 SERVER_HOST=0.0.0.0
@@ -2322,6 +2381,13 @@ RE_INDICATORS_HEX_CORE_BASE_URL=http://hex-core-service:8080
 RE_INDICATORS_ARTIFACT_BASE_URL_TEMPLATE=https://ce-rise-models.codeberg.page/re-indicators-specification/generated/
 RE_INDICATORS_HTTP_TIMEOUT_SECS=15
 
+# Optional SEE Impacts calculation service
+SEE_IMPACTS_HEX_CORE_BASE_URL=http://hex-core-service:8080
+SEE_IMPACTS_HEX_CORE_BEARER_TOKEN=
+SEE_IMPACTS_HTTP_TIMEOUT_SECS=30
+SEE_IMPACTS_CALCULATION_TIMEOUT_SECS=900
+SEE_IMPACTS_MAX_CONCURRENT_CALCULATIONS=2
+
 # Registry
 REGISTRY_MODE=catalog
 REGISTRY_CATALOG_FILE=/config/registry/catalog.json
@@ -2339,12 +2405,14 @@ AUTH_JWKS_REFRESH_SECS=3600
 """
 
 
-def _compose_readme(include_re_indicators: bool, include_internal_adapter: bool) -> str:
+def _compose_readme(include_re_indicators: bool, include_internal_adapter: bool, include_see_impacts: bool) -> str:
     optional_profiles = []
     if include_internal_adapter:
         optional_profiles.append("internal-adapter")
     if include_re_indicators:
         optional_profiles.append("re-indicators")
+    if include_see_impacts:
+        optional_profiles.append("see-impacts")
     profile_note = ", ".join(optional_profiles) if optional_profiles else "none selected"
     return f"""# Compose Starter
 
@@ -2363,6 +2431,10 @@ Before deployment:
 - copy `.env.example` to `.env` in your deployment workspace;
 - replace URLs, image tags, auth settings, ports, and registry catalog entries;
 - validate against the canonical CE-RISE GitOps template and component documentation.
+
+When SEE is selected, configure `SEE_IMPACTS_HEX_CORE_BEARER_TOKEN` if HEX Core requires authentication.
+The released SEE image provides its background and assessment methods; supply adopter-specific
+Product System and LCI Dataset records and a functional unit through the service API.
 """
 
 
@@ -2371,13 +2443,14 @@ def _generate_kubernetes_artifacts(
     project_name: str,
     external_io_adapter_url: str,
     include_re_indicators: bool,
+    include_see_impacts: bool,
     version_context: dict[str, object],
 ) -> list[dict[str, object]]:
     slug = _slugify_project_name(project_name)
     files = [
         _artifact_file(
             "k8s/README.md",
-            _kubernetes_readme(include_re_indicators),
+            _kubernetes_readme(include_re_indicators, include_see_impacts),
             "Kubernetes usage notes for the generated starter artifact.",
             mime_type="text/markdown",
         ),
@@ -2489,6 +2562,49 @@ def _generate_kubernetes_artifacts(
                 ),
             ]
         )
+    if include_see_impacts:
+        files.extend(
+            [
+                _artifact_file(
+                    "k8s/extensions/see-impacts/kustomization.yaml",
+                    _k8s_see_impacts_kustomization(),
+                    "SEE Impacts environment configuration.",
+                    mime_type="application/yaml",
+                ),
+                _artifact_file(
+                    "k8s/extensions/see-impacts/deployment.yaml",
+                    _k8s_see_impacts_deployment(),
+                    "SEE Impacts Deployment with writable workspace and service probes.",
+                    mime_type="application/yaml",
+                ),
+                _artifact_file(
+                    "k8s/extensions/see-impacts/service.yaml",
+                    _k8s_see_impacts_service(),
+                    "SEE Impacts cluster-local Service.",
+                    mime_type="application/yaml",
+                ),
+            ]
+        )
+        for environment in ("dev", "prod"):
+            files.append(
+                _artifact_file(
+                    f"k8s/overlays/{environment}-see-impacts/kustomization.yaml",
+                    _k8s_see_impacts_overlay(f"{slug}-{environment}", f"../{environment}"),
+                    f"SEE Impacts {environment} overlay.",
+                    mime_type="application/yaml",
+                )
+            )
+            if include_re_indicators:
+                files.append(
+                    _artifact_file(
+                        f"k8s/overlays/{environment}-calculations/kustomization.yaml",
+                        _k8s_see_impacts_overlay(
+                            f"{slug}-{environment}", f"../{environment}", include_re_indicators=True,
+                        ),
+                        f"Combined RE Indicators and SEE Impacts {environment} overlay.",
+                        mime_type="application/yaml",
+                    )
+                )
     return files
 
 
@@ -2497,12 +2613,16 @@ def _registry_catalog_json(version_context: dict[str, object] | None = None) -> 
     return json.dumps(catalog, indent=2)
 
 
-def _kubernetes_readme(include_re_indicators: bool) -> str:
-    extension_line = (
-        "- use `k8s/overlays/dev-re-indicators` or `k8s/overlays/prod-re-indicators` when the RE indicators extension is needed;"
-        if include_re_indicators
-        else "- add optional extensions only when the selected Digital Passport workflow needs them;"
-    )
+def _kubernetes_readme(include_re_indicators: bool, include_see_impacts: bool) -> str:
+    extension_lines = []
+    if include_re_indicators:
+        extension_lines.append("- use `k8s/overlays/dev-re-indicators` or `k8s/overlays/prod-re-indicators` for RE indicators;")
+    if include_see_impacts:
+        extension_lines.append("- use `k8s/overlays/dev-see-impacts` or `k8s/overlays/prod-see-impacts` for SEE Impacts;")
+        extension_lines.append("- supply a `see-impacts-auth` Secret with `HEX_CORE_BEARER_TOKEN` when HEX Core requires authentication;")
+    if include_re_indicators and include_see_impacts:
+        extension_lines.append("- use `k8s/overlays/dev-calculations` or `k8s/overlays/prod-calculations` for both services together;")
+    extension_line = "\n".join(extension_lines) or "- add optional extensions only when the selected Digital Passport workflow needs them;"
     return f"""# Kubernetes Starter
 
 This starter follows the CE-RISE Digital Passport System GitOps Template shape.
@@ -2552,7 +2672,8 @@ generatorOptions:
 
 
 def _k8s_hex_core_deployment() -> str:
-    return """apiVersion: apps/v1
+    image = _load_deployment_artifacts()["default_images"]["hex_core_service"]
+    return f"""apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hex-core-service
@@ -2568,7 +2689,7 @@ spec:
     spec:
       containers:
         - name: hex-core-service
-          image: rg.fr-par.scw.cloud/ce-rise-software/hex-core-service:latest
+          image: {image}
           ports:
             - containerPort: 8080
           envFrom:
@@ -2750,7 +2871,8 @@ generatorOptions:
 
 
 def _k8s_re_indicators_deployment() -> str:
-    return """apiVersion: apps/v1
+    image = _load_deployment_artifacts()["default_images"]["re_indicators_calculation_service"]
+    return f"""apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: re-indicators-calculation-service
@@ -2766,7 +2888,7 @@ spec:
     spec:
       containers:
         - name: re-indicators-calculation-service
-          image: rg.fr-par.scw.cloud/ce-rise-software/re-indicators-calculation:latest
+          image: {image}
           ports:
             - containerPort: 8081
           envFrom:
@@ -2801,6 +2923,118 @@ resources:
 """
 
 
+def _k8s_see_impacts_kustomization() -> str:
+    return """apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: see-impacts-env
+    literals:
+      - HEX_CORE_BASE_URL=http://hex-core-service:8080
+      - HTTP_TIMEOUT_SECS=30
+      - CALCULATION_TIMEOUT_SECS=900
+      - MAX_CONCURRENT_CALCULATIONS=2
+      - BRIGHTWAY_WORKSPACE_DIR=/var/lib/see-impacts/brightway
+
+generatorOptions:
+  disableNameSuffixHash: true
+"""
+
+
+def _k8s_see_impacts_deployment() -> str:
+    image = _load_deployment_artifacts()["default_images"]["see_impacts_calculation_service"]
+    return f"""apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: see-impacts-calculation-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: see-impacts-calculation-service
+  template:
+    metadata:
+      labels:
+        app: see-impacts-calculation-service
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: see-impacts-calculation-service
+          image: {image}
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: see-impacts-env
+            - secretRef:
+                name: see-impacts-auth
+                optional: true
+          volumeMounts:
+            - name: brightway-workspace
+              mountPath: /var/lib/see-impacts/brightway
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /capabilities
+              port: 8080
+            periodSeconds: 30
+            timeoutSeconds: 30
+      volumes:
+        - name: brightway-workspace
+          emptyDir: {{}}
+"""
+
+
+def _k8s_see_impacts_service() -> str:
+    return """apiVersion: v1
+kind: Service
+metadata:
+  name: see-impacts-calculation-service
+spec:
+  selector:
+    app: see-impacts-calculation-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+"""
+
+
+def _k8s_see_impacts_overlay(namespace: str, base_overlay: str, *, include_re_indicators: bool = False) -> str:
+    re_extension = "  - ../../extensions/re-indicators\n" if include_re_indicators else ""
+    return f"""apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: {namespace}
+
+resources:
+  - {base_overlay}
+{re_extension}  - ../../extensions/see-impacts
+"""
+
+
 def _indent_text(text: str, spaces: int) -> str:
     prefix = " " * spaces
     return "\n".join(prefix + line if line else prefix for line in text.splitlines())
@@ -2816,6 +3050,7 @@ def _deployment_validation_commands(
     target: str,
     *,
     include_re_indicators: bool,
+    include_see_impacts: bool,
     include_internal_adapter: bool,
 ) -> list[str]:
     commands = []
@@ -2825,6 +3060,8 @@ def _deployment_validation_commands(
             profile_args.append("--profile internal-adapter")
         if include_re_indicators:
             profile_args.append("--profile re-indicators")
+        if include_see_impacts:
+            profile_args.append("--profile see-impacts")
         profile_segment = f" {' '.join(profile_args)}" if profile_args else ""
         commands.append(
             f"docker compose -f compose/docker-compose.yml --env-file compose/.env.example{profile_segment} config"
@@ -2841,6 +3078,20 @@ def _deployment_validation_commands(
                 [
                     "kubectl kustomize k8s/overlays/dev-re-indicators",
                     "kubectl kustomize k8s/overlays/prod-re-indicators",
+                ]
+            )
+        if include_see_impacts:
+            commands.extend(
+                [
+                    "kubectl kustomize k8s/overlays/dev-see-impacts",
+                    "kubectl kustomize k8s/overlays/prod-see-impacts",
+                ]
+            )
+        if include_re_indicators and include_see_impacts:
+            commands.extend(
+                [
+                    "kubectl kustomize k8s/overlays/dev-calculations",
+                    "kubectl kustomize k8s/overlays/prod-calculations",
                 ]
             )
     return commands
@@ -3036,6 +3287,9 @@ def _registry_catalog_models(version_context: dict[str, object]) -> list[dict[st
         "product-profile": ("product_profile_tags", "0.0.3"),
         "usage-and-maintenance": ("usage_and_maintenance_tags", "0.0.2"),
         "re-indicators-specification": ("re_indicators_specification_tags", "0.0.5"),
+        "product-system": ("product_system_tags", "0.0.1"),
+        "lci-dataset": ("lci_dataset_tags", "0.0.1"),
+        "integrated-lca": ("integrated_lca_tags", "0.2.0"),
     }
     by_channel = _resolved_version_by_channel(version_context)
     model_specs = [
@@ -3861,6 +4115,10 @@ TOOL_DEFINITIONS = [
                     "type": "boolean",
                     "description": "When true, include RE Indicators Calculation Service profiles/extensions.",
                 },
+                "include_see_impacts": {
+                    "type": "boolean",
+                    "description": "Include SEE Impacts profiles/extensions independently of RE Indicators. Defaults to whether see_impacts_calculation_service is in selected_components.",
+                },
                 "include_internal_adapter": {
                     "type": "boolean",
                     "description": "When true, include the optional internal adapter Compose profile.",
@@ -3903,6 +4161,10 @@ TOOL_DEFINITIONS = [
                 "include_re_indicators": {
                     "type": "boolean",
                     "description": "When true, include RE Indicators Calculation Service profiles/extensions.",
+                },
+                "include_see_impacts": {
+                    "type": "boolean",
+                    "description": "Include SEE Impacts profiles/extensions independently of RE Indicators. Defaults to whether see_impacts_calculation_service is in selected_components.",
                 },
                 "include_internal_adapter": {
                     "type": "boolean",

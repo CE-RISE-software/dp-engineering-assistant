@@ -104,6 +104,11 @@ The reference-example layer is curated through `data/reference_examples.json`.
 
 The local demonstrator is treated as an illustrative workflow. The server can generalize reusable patterns from it, such as scope declaration, service selection, registry adaptation, representative payload design, lifecycle operations, and operational checks.
 
+The examples cover the chair passport, laptop RE indicators, and PV environmental impacts. The
+PV workflow demonstrates one calculation request returning all configured indicators, with live
+input/output model validation, numerical comparison, and persistence. It is not a restriction on
+the products that SEE can assess.
+
 The server should not treat demonstrator-specific products, payloads, no-auth settings, ports, or local persistence decisions as defaults for other adopters.
 
 ## Update Awareness
@@ -130,8 +135,16 @@ The deployment artifact layer is curated through `data/deployment_artifacts.json
 The server can return starter file contents for:
 
 - Docker Compose baseline with HEX Core Service, a local registry catalog, and an external IO adapter URL;
-- optional Compose profiles for the internal adapter and RE Indicators Calculation Service;
-- Kubernetes base, development overlay, production overlay, and optional RE indicators extension.
+- optional Compose profiles for the internal adapter, RE Indicators, and SEE Impacts;
+- Kubernetes base, development overlay, production overlay, and optional RE Indicators and SEE Impacts extensions;
+- SEE-only overlays and combined calculation overlays when both services are selected.
+
+`generate_deployment_artifact_plan` and `generate_deployment_artifacts` accept
+`include_see_impacts`. It defaults to whether `see_impacts_calculation_service` appears in
+`selected_components`; an explicit boolean overrides that selection. The RE Indicators option
+remains independent. Generated files use the pinned GitOps images and register Product System,
+LCI Dataset, and Integrated LCA models. SEE's HEX Core token and calculation/workspace settings
+are explicit operator configuration. See [Deployment Artifacts](deployment-artifacts.md).
 
 The generated outputs are intended for planning, review, and handover into the canonical `dp-system-gitops-template` workflow. The server does not write files to disk and does not deploy anything.
 
@@ -146,6 +159,7 @@ The server can probe:
 - HEX Core Service: `GET /admin/health`, `GET /admin/ready`, `GET /admin/version`, `GET /admin/models/count`, `GET /openapi.json`
 - Digital Passport JSON DB Storage Service: `GET /health`, `GET /ready`, `GET /openapi.json`
 - RE Indicators Calculation Service: `GET /health`, `GET /openapi.json`
+- SEE Impacts Calculation Service: `GET /health`, `GET /capabilities`, `GET /methods`, `GET /openapi.json` (default base URL `http://127.0.0.1:8084`)
 
 The server intentionally does not call write or domain-operation endpoints such as:
 

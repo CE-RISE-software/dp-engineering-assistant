@@ -33,6 +33,13 @@ The first server connects to curated CE-RISE repositories and documentation refe
 
 It can also return Docker Compose and Kubernetes starter file contents for planning deployment handover. These outputs are derived from the existing CE-RISE GitOps template and are not a replacement deployment framework.
 
+Supported calculation services are RE Indicators and SEE Impacts, selected independently or
+together. SEE integration covers the Product System and LCI Dataset inputs, the functional unit,
+and the complete Integrated LCA result with all 25 configured environmental impact indicators.
+The assistant can generate the deployment configuration and inspect the service's read-only
+endpoints; the SEE service performs the calculation. The PV demonstrator is one example of this
+product-neutral workflow.
+
 It does not call live CE-RISE business operations such as record creation, validation, query, indicator computation, or registry refresh.
 
 Compliance-oriented outputs are planning aids only. They are not legal certification or legal advice.

@@ -10,12 +10,14 @@
       "repository_url": "https://codeberg.org/CE-RISE-software/dp-system-local-demonstrator",
       "example_role": "Local-only deterministic reference workflow showing how existing CE-RISE Digital Passport services, storage, model registry entries, payloads, and smoke checks can be exercised together.",
       "concrete_example_elements": [
-        "Docker Compose stack with HEX Core Service, JSON DB storage service, PostgreSQL, and optional RE Indicators Calculation Service",
+        "Docker Compose stack with HEX Core Service, JSON DB storage service, PostgreSQL, and optional RE Indicators and SEE Impacts services",
         "fictional product records used as demonstration payloads",
         "local no-auth configuration for deterministic development runs",
         "valid and invalid payload paths",
         "record creation, persistence, read-back, and validation checks",
-        "optional resource-efficiency indicator calculation scenario"
+        "laptop scenario calculating all five published RE indicators",
+        "PV scenario validating Product System and LCI Dataset inputs, calculating all 25 impact indicators in one request, comparing the numerical reference, and validating, persisting, and reading back the complete Integrated LCA result",
+        "separate readiness and validation commands; SEE validation alone does not run numerical calculations"
       ],
       "generalizable_patterns": [
         {
@@ -32,9 +34,10 @@
           "id": "select_services_and_storage",
           "title": "Select CE-RISE services and storage deliberately",
           "generalized_action": "Use the demonstrator to understand service interactions, then choose the CE-RISE services and storage pattern needed for the adopter's target workflow.",
-          "reusable_ce_rise_assets": ["hex_core_service", "dp_storage_jsondb_service", "re_indicators_calculation_service"],
+          "reusable_ce_rise_assets": ["hex_core_service", "dp_storage_jsondb_service", "re_indicators_calculation_service", "see_impacts_calculation_service"],
           "not_assumptions": [
             "Do not assume the optional RE indicators service is always required.",
+            "Do not assume the PV reference example restricts SEE to photovoltaic products or requires a product-specific Brightway project.",
             "Do not assume local PostgreSQL-backed storage is the production storage decision."
           ]
         },
