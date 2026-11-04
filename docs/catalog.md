@@ -18,6 +18,7 @@ The update-awareness layer is backed by `data/update_channels.json`. It records 
 
 - `capabilities`: assistant-facing CE-RISE capability families.
 - `components`: existing CE-RISE assets and their intended reuse role.
+- `composition_policy`: independent component/model selection, mixed architectures, and the CE-RISE-only assessment boundary.
 - `architecture_patterns`: reusable Digital Passport implementation paths.
 - `adoption_context_fields`: fields used to assess general Digital Passport adoption context.
 - `compliance_drivers`: broad planning drivers for compliance-oriented adoption, without legal certification.
@@ -53,6 +54,12 @@ This list is expected to grow as the server is connected to more detailed CE-RIS
 ## Maintenance Rule
 
 Catalog entries should stay factual, conservative, and reuse-oriented. When a workflow needs implementation detail, the assistant should point to the relevant CE-RISE component or documentation rather than duplicating or replacing it.
+
+CE-RISE patterns are optional examples, not complete-system requirements. Explicit user selections
+are preserved, including external or uncatalogued component labels. Those labels do not acquire
+invented capabilities, release channels, or a compatibility assessment. An external alternative is
+not a missing CE-RISE component. Required settings and model contracts are checked only within the
+supplied CE-RISE configuration and explicitly connected CE-RISE interfaces.
 
 Adoption and compliance entries should remain general planning guidance. They should not assert legal compliance or imply certification.
 

@@ -9,6 +9,12 @@ A repo-native stdio MCP server that helps AI agents and human users make better 
 
 This assistant is not a replacement for CE-RISE assets. Its role is to guide discovery, configuration, implementation planning, readiness checks, and appropriate reuse of the existing CE-RISE ecosystem.
 
+CE-RISE components and models can be selected individually and combined with external software,
+models, and deployment workflows. The assistant preserves those choices; it does not require a
+complete CE-RISE stack or treat an external alternative as a missing component. Its configuration
+review assesses only the supplied, supported CE-RISE settings and declared CE-RISE connections.
+External implementations and their interoperability remain outside that assessment.
+
 The main workflow is general Digital Passport adoption: helping an organization understand compliance drivers, value-chain information flows, implementation readiness, and value opportunities from shared information, regardless of company size or organizational label.
 
 The main human-facing CE-RISE solution entry point is:
@@ -33,6 +39,7 @@ The public documentation for this MCP server is published at:
 - MCP registry metadata in `server.json`
 - A container runtime skeleton in `Dockerfile`
 - Local run, smoke, and validation scripts in `scripts/`
+- Runtime dependencies in `requirements.txt`, including the YAML parser used for configuration review
 - A first deterministic design workflow example in `examples/01-design-workflow/`
 - Documentation in `docs` using [Book](https://book.deno.land/)
 - GitHub mirror automation for release, OCI image publication, and MCP registry publication
@@ -59,6 +66,7 @@ The initial tool surface is catalog-backed and deterministic:
 - `generate_deployment_artifact_plan`
 - `generate_deployment_artifacts`
 - `assess_deployment_artifact_readiness`
+- `review_configuration_consistency`
 - `list_reference_examples`
 - `generalize_reference_example`
 - `list_update_channels`
@@ -98,11 +106,28 @@ Adoption, architecture, value-chain, and roadmap outputs include `source_referen
 
 Deployment artifact outputs are starter planning artifacts only. They do not replace the canonical `dp-system-gitops-template` repository or the component-specific deployment documentation.
 
+`review_configuration_consistency` checks supplied Compose or Kubernetes configuration contents
+for mismatched ports and service URLs, missing required models, catalog URL policy violations,
+and authentication inconsistencies. It accepts resolved Compose files or rendered Kubernetes
+manifests and reports findings by field. Missing referenced configuration is reported as incomplete.
+External components and endpoints are listed separately as `out_of_scope`, not as missing or
+incomplete. A configuration containing no supported CE-RISE component returns `not_applicable`.
+It does not open the supplied paths, contact services, or run deployment commands. See
+[Configuration Consistency Review](docs/deployment-artifacts.md#configuration-consistency-review).
+
 The deployment tools support RE Indicators and SEE Impacts independently or together. Select
 `see_impacts_calculation_service` in `selected_components`, or pass `include_see_impacts: true`,
 to include SEE in the generated Compose and Kubernetes files. The files use pinned service images
 from the GitOps template. Kubernetes outputs include SEE-only and, when both services are selected,
 combined calculation overlays.
+
+An explicit `selected_components` list generates only those supported CE-RISE parts; external
+labels are retained without generating or assessing their implementations. Selecting SEE without
+HEX Core produces standalone service fragments, not a local core or registry. Use
+`hex_core_base_url` to configure the chosen validation endpoint, including an external compatible
+implementation. Omitting `selected_components` requests the optional HEX Core reference baseline.
+Architecture and implementation tools likewise preserve declared mixed selections rather than
+adding a required CE-RISE component set.
 
 For environmental footprint workflows, the assistant points to Product System and LCI Dataset
 inputs, the caller's functional unit, and the complete Integrated LCA output containing all
@@ -118,6 +143,14 @@ for an environmental footprint deployment request.
 Compliance-oriented outputs are planning aids only. They do not provide legal certification or legal advice.
 
 ## Local Use
+
+Install the runtime dependencies in the Python environment used to run the MCP server:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+The container image includes these dependencies.
 
 Run the MCP server:
 

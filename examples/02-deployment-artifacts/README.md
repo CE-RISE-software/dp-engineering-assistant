@@ -138,3 +138,26 @@ kubectl kustomize k8s/overlays/prod-calculations
 
 Before deployment, provide the SEE-to-HEX Core token when authentication is required and review
 the generated service settings against the GitOps template and SEE documentation.
+
+## Mixed Component Selection
+
+For an existing platform with its own validation and analytics services, request only the SEE
+configuration fragments:
+
+```json
+{
+  "target": "both",
+  "selected_components": [
+    "see_impacts_calculation_service",
+    "company-validation-service",
+    "external-analytics"
+  ],
+  "hex_core_base_url": "https://validation.company.example"
+}
+```
+
+The result contains SEE's Compose profile and Kubernetes extension, not a local HEX Core,
+registry, or core-specific overlays. The two external labels are retained outside generation
+scope. Their implementations are not generated, replaced, or declared compatible by the assistant.
+Integrate the fragments into the platform's deployment workflow and ensure the chosen validation
+endpoint supplies the interface required by SEE. A CE-RISE-only system is not required.

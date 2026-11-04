@@ -6,6 +6,12 @@ Its purpose is to help users discover CE-RISE components, understand how they fi
 
 It does not replace CE-RISE services, schemas, methods, documentation, or deployment assets. It guides users toward them.
 
+CE-RISE provides interoperable building blocks, not a required closed stack. Users can select
+individual CE-RISE components and models and combine them with external alternatives. The assistant
+preserves declared choices and offers CE-RISE patterns as optional references. It reviews only
+supported CE-RISE configuration; it does not classify external components as missing or certify
+their interoperability.
+
 The main product workflow is general Digital Passport adoption. The assistant should help an organization clarify compliance drivers, value-chain information flows, implementation readiness, and value opportunities from shared information. This workflow is not tied to a company-size label.
 
 ## Initial Scope
@@ -22,6 +28,7 @@ The first implementation is intentionally small and deterministic:
 - MCP tools for listing, checking, inspecting, and snapshotting connected CE-RISE sources;
 - MCP tools for read-only live service discovery;
 - MCP tools for planning, generating, and readiness-checking deployment artifact outputs;
+- static consistency review of supplied Compose or Kubernetes configuration, including service connections, ports, model catalogs, and authentication;
 - MCP tools for listing reference examples and generalizing reusable workflow patterns from them;
 - MCP tools for optional update-aware context over configured CE-RISE upstream channels;
 - MCP resources exposing the catalog, source manifest, live service manifest, deployment artifact manifest, reference-example manifest, update channel manifest, and core scope rule;
@@ -51,6 +58,12 @@ The human-facing CE-RISE solution entry point remains:
 - https://solution.ce-rise.eu/
 
 ## Local Commands
+
+Install the runtime dependencies into the Python environment used by the MCP server:
+
+```bash
+python -m pip install -r requirements.txt
+```
 
 ```bash
 ./scripts/run-local.sh

@@ -6,7 +6,14 @@ The repository ships a thin stdio MCP server in `server/mcp_server.py`.
 
 The server is an assistant over existing CE-RISE assets. It must guide discovery, configuration, planning, and readiness assessment without substituting for CE-RISE components.
 
-The current runtime is repo-native and uses only the Python standard library. It is not packaged as an installable Python project.
+Components and models can be selected independently and mixed with external implementations.
+The assistant preserves those choices and limits its checks to the supplied, supported CE-RISE
+configuration. Reference patterns are optional; external parts are not missing dependencies and
+their implementation or compatibility is not assessed.
+
+The runtime is repo-native, with PyYAML for reading supplied configuration documents and the
+Python standard library for the remaining server functions. Dependencies are declared in
+`requirements.txt`; the server is not packaged as an installable Python project.
 
 ## Runtime Shape
 
@@ -40,6 +47,7 @@ The current runtime is repo-native and uses only the Python standard library. It
 | `generate_deployment_artifact_plan` | `deployment_artifact_plan_result` | Map deployment choices to recommended artifact profiles and files. |
 | `generate_deployment_artifacts` | `deployment_artifact_generation_result` | Return Docker Compose and/or Kubernetes starter file contents, with optional checked version context. |
 | `assess_deployment_artifact_readiness` | `deployment_artifact_readiness_result` | Check whether deployment decisions are complete enough before using generated artifacts. |
+| `review_configuration_consistency` | `configuration_consistency_review_result` | Check supplied resolved Compose or rendered Kubernetes contents for port, service URL, model catalog, and authentication inconsistencies. |
 | `list_reference_examples` | `reference_examples_result` | List curated CE-RISE examples that can be generalized. |
 | `generalize_reference_example` | `reference_example_generalization_result` | Extract reusable workflow patterns from a reference example for a declared context. |
 | `list_update_channels` | `update_channels_result` | List configured read-only update channels. |
@@ -146,9 +154,30 @@ remains independent. Generated files use the pinned GitOps images and register P
 LCI Dataset, and Integrated LCA models. SEE's HEX Core token and calculation/workspace settings
 are explicit operator configuration. See [Deployment Artifacts](deployment-artifacts.md).
 
+When `selected_components` is supplied, only selected supported CE-RISE parts are generated.
+Selecting a calculator without `hex_core_service` produces standalone fragments, without a local
+core, registry, or core-specific overlays. `hex_core_base_url` specifies its chosen validation
+endpoint. External choices remain in `declared_components` and `outside_generation_scope` without
+being generated or labelled missing. An external-only selection returns `not_applicable` and no
+files. Omitting the selection requests the optional HEX Core reference baseline.
+
+`recommend_passport_architecture` also accepts `selected_components`, and
+`generate_implementation_plan` preserves the `known_components` selection. Both retain external
+labels and expose CE-RISE patterns as `optional_reference_components`. Adoption paths and roadmaps
+use `adoption_context.selected_components` in the same way. Readiness results describe the
+supplied planning context, not the completeness of a CE-RISE stack.
+
 The generated outputs are intended for planning, review, and handover into the canonical `dp-system-gitops-template` workflow. The server does not write files to disk and does not deploy anything.
 
 Users must still review secrets, image tags, domains, registry entries, authentication mode, resource settings, and environment overlays against the existing CE-RISE template and component documentation.
+
+Use `review_configuration_consistency` to check the configuration contents themselves after
+rendering Compose variables or Kubernetes overlays. It complements the declaration-based readiness
+check. The tool returns field-specific findings and distinguishes `consistent`, `inconsistent`,
+`incomplete`, and `not_applicable` results for its CE-RISE review scope. External components and
+endpoints appear in `out_of_scope` and do not make that review incomplete. It reads only the supplied contents, not the supplied path labels, and
+performs no network or command execution. See
+[Configuration Consistency Review](deployment-artifacts.md#configuration-consistency-review).
 
 ## Live Service Discovery
 
@@ -171,6 +200,12 @@ The server intentionally does not call write or domain-operation endpoints such 
 Local URL overrides are restricted to localhost addresses.
 
 ## Local Use
+
+Install `requirements.txt` into the server's Python environment first:
+
+```bash
+python -m pip install -r requirements.txt
+```
 
 ```bash
 ./scripts/run-local.sh

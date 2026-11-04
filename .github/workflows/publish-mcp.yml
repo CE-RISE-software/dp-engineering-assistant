@@ -25,6 +25,12 @@ jobs:
           echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
           echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/dp-engineering-assistant-mcp:${VERSION}" >> "$GITHUB_ENV"
 
+      - name: Install runtime dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r requirements.txt
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+
       - name: Validate local MCP server
         run: ./scripts/validate-local.sh
 

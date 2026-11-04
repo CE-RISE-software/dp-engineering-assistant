@@ -54,6 +54,8 @@ class McpServerTest(unittest.TestCase):
         self.assertEqual(result["protocolVersion"], "2025-11-25")
         self.assertIn("tools", result["capabilities"])
         self.assertIn("resources", result["capabilities"])
+        self.assertIn("No complete CE-RISE stack is required", result["instructions"])
+        self.assertIn("external components are outside assessment", result["instructions"])
 
     def test_tools_list_requires_initialize(self) -> None:
         response = self.server.handle_message(
@@ -87,6 +89,7 @@ class McpServerTest(unittest.TestCase):
                 "generate_deployment_artifact_plan",
                 "generate_deployment_artifacts",
                 "assess_deployment_artifact_readiness",
+                "review_configuration_consistency",
                 "list_reference_examples",
                 "generalize_reference_example",
                 "list_update_channels",
@@ -185,7 +188,8 @@ class McpServerTest(unittest.TestCase):
             }
         )
         text = read_response[0]["result"]["contents"][0]["text"]
-        self.assertIn("must not substitute", text)
+        self.assertIn("without reimplementing the selected CE-RISE assets", text)
+        self.assertIn("No complete CE-RISE stack is required", text)
 
         source_response = self.server.handle_message(
             {

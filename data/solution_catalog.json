@@ -2,6 +2,7 @@
   "catalog_version": "0.1.0-draft",
   "catalog_status": "initial-local-catalog",
   "scope_note": "This catalog is an assistant-facing guide to existing CE-RISE assets. It must not be used as a substitute for CE-RISE components, services, schemas, methods, documentation, or deployment workflows.",
+  "composition_policy": "CE-RISE components and data models may be selected independently and combined with external components and models. No complete CE-RISE stack is required. Architecture patterns and generated templates are optional reference assets. User selections are preserved; only supplied CE-RISE configuration and explicitly connected CE-RISE interfaces are assessed. External or uncatalogued components are outside that assessment, not missing dependencies, and their interoperability is not certified by this assistant.",
   "primary_human_reference": "https://solution.ce-rise.eu/",
   "compliance_note": "Compliance-oriented outputs are implementation planning aids, not legal certification or legal advice.",
   "source_assumptions": [
@@ -23,7 +24,7 @@
       "id": "passport_architecture_guidance",
       "family": "design",
       "title": "Digital Passport architecture guidance",
-      "description": "Recommend an implementation path that combines existing CE-RISE services, storage, models, validation, and deployment assets.",
+      "description": "Offer optional CE-RISE integration patterns while preserving the user's choice of CE-RISE, external, or mixed services, storage, models, and deployment tools.",
       "keywords": ["architecture", "design", "system", "topology", "passport", "deployment", "prototype", "production"],
       "related_components": ["hex_core_service", "dp_storage_jsondb_service", "dp_system_local_demonstrator", "dp_system_gitops_template"],
       "mvp_supported": true
@@ -186,7 +187,7 @@
     {
       "id": "service_backed_passport_system",
       "title": "Service-backed Digital Passport system",
-      "description": "Use the existing CE-RISE core and storage services as the backbone, then add model alignment and deployment planning around them.",
+      "description": "An optional reference combining CE-RISE core and storage services. Adopters may select individual components, use external alternatives, and choose other models or deployment workflows.",
       "best_for": ["implementation planning", "system integration", "company engineering workflow"],
       "component_sequence": ["solution_portal", "hex_core_service", "dp_storage_jsondb_service"]
     },

@@ -1,6 +1,6 @@
 {
   "manifest_version": "0.1.0-draft",
-  "scope_note": "Reference examples are illustrative CE-RISE workflows. The assistant may generalize reusable patterns from them, but must not treat their product examples, payloads, auth choices, ports, or local-only settings as defaults for every adopter.",
+  "scope_note": "Reference examples are optional CE-RISE workflows, not required architectures. Adopters may select individual CE-RISE components and models, mix them with external alternatives, or use other deployment workflows. The example component set, products, payloads, auth choices, ports, and storage are not requirements or defaults for every adopter.",
   "examples": [
     {
       "id": "dp_system_local_demonstrator",
@@ -33,10 +33,11 @@
         {
           "id": "select_services_and_storage",
           "title": "Select CE-RISE services and storage deliberately",
-          "generalized_action": "Use the demonstrator to understand service interactions, then choose the CE-RISE services and storage pattern needed for the adopter's target workflow.",
+          "generalized_action": "Use the demonstrator as an optional interface example, then preserve the adopter's selected CE-RISE and external services and storage. The example component set is not a dependency checklist.",
           "reusable_ce_rise_assets": ["hex_core_service", "dp_storage_jsondb_service", "re_indicators_calculation_service", "see_impacts_calculation_service"],
           "not_assumptions": [
             "Do not assume the optional RE indicators service is always required.",
+            "Do not assume a complete CE-RISE stack or CE-RISE-only data models are required.",
             "Do not assume the PV reference example restricts SEE to photovoltaic products or requires a product-specific Brightway project.",
             "Do not assume local PostgreSQL-backed storage is the production storage decision."
           ]
@@ -44,7 +45,7 @@
         {
           "id": "adapt_model_registry",
           "title": "Adapt the model registry catalog",
-          "generalized_action": "Use the demonstrator's registry catalog pattern to identify the model artifact URLs needed by the adopter's passport scope.",
+          "generalized_action": "When HEX Core is selected, use the registry pattern for the adopter's chosen CE-RISE or external model artifacts. Otherwise retain the selected model-management workflow without requiring a CE-RISE registry.",
           "reusable_ce_rise_assets": ["ce_rise_models", "hex_core_service"],
           "not_assumptions": [
             "Do not assume the demonstrator's catalog entries cover every adopter scope.",
@@ -94,7 +95,7 @@
         "The demonstrator is a reference example, not the target architecture for every adopter.",
         "Local no-auth configuration is for deterministic development only.",
         "Fictional payload content is not adopter evidence.",
-        "Deployment handover should use the CE-RISE GitOps template and component documentation."
+        "The CE-RISE GitOps template is an optional source of fragments, not a required replacement for the adopter's deployment workflow."
       ]
     }
   ]

@@ -4,6 +4,10 @@ The server can use CE-RISE examples as examples, then generalize from them.
 
 The first curated reference example is the Digital Passport System Local Demonstrator. It is useful because it shows existing CE-RISE components working together locally, but its concrete products, payloads, local no-auth settings, storage choices, and ports are not defaults for adopters.
 
+Its component set is not a required architecture. Adopters can reuse individual CE-RISE services
+or models alongside external components and choose another deployment workflow. Only the selected
+CE-RISE interfaces are within the assistant's assessment scope.
+
 Its three commands demonstrate different workflows:
 
 | Command in the demonstrator repository | Workflow |

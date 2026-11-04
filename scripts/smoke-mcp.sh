@@ -14,4 +14,6 @@ printf '%s\n' \
   '{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"generalize_reference_example","arguments":{"example_id":"dp_system_local_demonstrator","target_outcome":"local learning workflow","adoption_context":{"organization_role":"manufacturer","passport_scope":"product family","value_chain_actors":["supplier","customer"],"shared_information":["composition","traceability evidence"]}}}}' \
   '{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"build_update_aware_solution_context","arguments":{"component_ids":["hex_core_service","ce_rise_models"],"check_remote":false}}}' \
   '{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"discover_model_repositories","arguments":{"check_remote":false}}}' \
+  '{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"review_configuration_consistency","arguments":{"target":"compose","files":[{"path":"compose.yaml","content":"services:\n  see-impacts-calculation-service:\n    environment:\n      HEX_CORE_BASE_URL: http://localhost:8080\n"}]}}}' \
+  '{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"generate_deployment_artifacts","arguments":{"target":"compose","selected_components":["see_impacts_calculation_service","external-analytics"],"hex_core_base_url":"https://validation.example.org"}}}' \
   | python server/mcp_server.py

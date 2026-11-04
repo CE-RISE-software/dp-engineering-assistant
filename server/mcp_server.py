@@ -9,6 +9,13 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+import yaml
+
+if __package__:
+    from .configuration_review import review_configuration
+else:
+    from configuration_review import review_configuration
+
 __version__ = "0.0.2"
 
 SUPPORTED_PROTOCOL_VERSIONS = (
@@ -222,6 +229,7 @@ def _public_component(component: dict[str, object]) -> dict[str, object]:
 
 def _public_pattern(pattern: dict[str, object]) -> dict[str, object]:
     return {
+        "role": "optional_reference",
         "id": pattern["id"],
         "title": pattern["title"],
         "description": pattern["description"],
@@ -261,6 +269,7 @@ def _public_value_opportunity(opportunity: dict[str, object]) -> dict[str, objec
 
 def _public_adoption_path(path: dict[str, object]) -> dict[str, object]:
     return {
+        "role": "optional_reference",
         "id": path["id"],
         "title": path["title"],
         "description": path["description"],
@@ -728,6 +737,7 @@ def list_solution_capabilities(arguments: dict[str, object]) -> dict[str, object
         {
             "catalog_version": catalog["catalog_version"],
             "scope_note": catalog["scope_note"],
+            "composition_policy": catalog["composition_policy"],
             "capabilities": [_public_capability(item) for item in capabilities],
             "update_awareness": _update_awareness_for_components(component_ids),
         },
@@ -756,6 +766,7 @@ def list_solution_components(arguments: dict[str, object]) -> dict[str, object]:
         {
             "catalog_version": catalog["catalog_version"],
             "components": [_public_component(item) for item in components],
+            "composition_policy": catalog["composition_policy"],
             "update_awareness": _update_awareness_for_components(
                 [str(item["id"]) for item in components if "id" in item]
             ),
@@ -796,6 +807,7 @@ def map_user_goal_to_ce_rise_capabilities(arguments: dict[str, object]) -> dict[
         {"user_goal": user_goal, "constraints": constraints},
         {
             "matched_capabilities": [_public_capability(item) for item in matches],
+            "composition_policy": catalog["composition_policy"],
             "suggested_components": suggested_components,
             "source_references": _source_references_for_components(component_ids),
             "live_service_connections": _live_service_connections_for_components(component_ids),
@@ -818,6 +830,7 @@ def map_user_goal_to_ce_rise_capabilities(arguments: dict[str, object]) -> dict[
 def recommend_passport_architecture(arguments: dict[str, object]) -> dict[str, object]:
     use_case = _string_arg(arguments, "use_case")
     priorities = _string_list_arg(arguments, "priorities")
+    selected_components = _string_list_arg(arguments, "selected_components")
     catalog = _load_catalog()
     tokens = _tokens(use_case, " ".join(priorities))
     patterns = catalog["architecture_patterns"]
@@ -835,25 +848,25 @@ def recommend_passport_architecture(arguments: dict[str, object]) -> dict[str, o
             pattern for pattern in patterns if pattern["id"] == "service_backed_passport_system"
         ]
     primary = recommendations[0]
-    components = _by_id(catalog["components"])
-    sequence = [
-        _public_component(components[component_id])
-        for component_id in primary.get("component_sequence", [])
-        if component_id in components
-    ]
+    selected = "selected_components" in arguments
+    component_selection = selected_components if selected else primary.get("component_sequence", [])
+    sequence = _components_by_ids(component_selection, catalog)
     component_ids = _component_ids_from_components(sequence)
     return _result(
         "passport_architecture_recommendation_result",
-        {"use_case": use_case, "priorities": priorities},
+        {"use_case": use_case, "priorities": priorities, "selected_components": selected_components},
         {
             "recommended_pattern": _public_pattern(primary),
             "component_sequence": sequence,
+            "selection_basis": "user_selection" if selected else "optional_reference_pattern",
+            "optional_reference_components": _component_sequence(primary, catalog),
+            "composition_policy": catalog["composition_policy"],
             "source_references": _source_references_for_components(component_ids),
             "live_service_connections": _live_service_connections_for_components(component_ids),
             "update_awareness": _update_awareness_for_components(component_ids),
             "alternatives": [_public_pattern(item) for item in recommendations[1:]],
             "assumptions": [
-                "The recommendation is a reuse path through existing CE-RISE assets.",
+                "The pattern is an optional reuse example, not a required architecture or a dependency checklist.",
                 "Live service configuration is outside this initial server setup.",
                 "The selected path should be checked against project-specific data, governance, and deployment constraints."
             ],
@@ -882,16 +895,9 @@ def generate_implementation_plan(arguments: dict[str, object]) -> dict[str, obje
         pattern = next(
             item for item in catalog["architecture_patterns"] if item["id"] == recommended["id"]
         )
-    sequence = list(pattern.get("component_sequence", []))
-    for component_id in known_components:
-        if component_id not in sequence:
-            sequence.append(component_id)
-    components = _by_id(catalog["components"])
-    component_sequence = [
-        _public_component(components[component_id])
-        for component_id in sequence
-        if component_id in components
-    ]
+    selected = "known_components" in arguments
+    sequence = known_components if selected else list(pattern.get("component_sequence", []))
+    component_sequence = _components_by_ids(sequence, catalog)
     steps = [
         {
             "id": "clarify_scope",
@@ -901,26 +907,26 @@ def generate_implementation_plan(arguments: dict[str, object]) -> dict[str, obje
         },
         {
             "id": "select_existing_components",
-            "title": "Select existing CE-RISE components",
-            "action": "Use the recommended component sequence as the initial reuse path and document any project-specific exclusions.",
+            "title": "Confirm the selected components and interfaces",
+            "action": "Preserve the user's CE-RISE, external, or mixed component choices and document their intended interfaces. CE-RISE reference patterns are optional, not a list of missing components.",
             "ce_rise_reuse": sequence,
         },
         {
             "id": "choose_data_model_strategy",
             "title": "Choose the data model and validation strategy",
-            "action": "Identify available schemas, SHACL assets, or model sources, then assess coverage where possible.",
+            "action": "Identify the chosen CE-RISE or external models and their declared interface contracts. Assess only the CE-RISE configuration supplied for review; do not assume that an external model must be replaced.",
             "ce_rise_reuse": ["ce_rise_models"],
         },
         {
             "id": "run_local_demonstration",
             "title": "Use the local demonstrator as a reference example",
-            "action": "Study or run the local demonstrator to understand how selected CE-RISE components fit together, then generalize the pattern to the declared scope instead of copying the demo data or local-only settings.",
+            "action": "When useful, inspect the local demonstrator as an optional example of selected CE-RISE interfaces. Its component set, products, data, and deployment choices are not requirements for the adopter.",
             "ce_rise_reuse": ["dp_system_local_demonstrator"],
         },
         {
             "id": "prepare_deployment_path",
             "title": "Prepare the deployment path",
-            "action": "If the local path is stable, map configuration choices to the existing GitOps deployment template.",
+            "action": "Use the adopter's deployment workflow. The CE-RISE GitOps template is an optional source of configuration fragments for the selected CE-RISE parts.",
             "ce_rise_reuse": ["dp_system_gitops_template"],
         },
         {
@@ -930,6 +936,10 @@ def generate_implementation_plan(arguments: dict[str, object]) -> dict[str, obje
             "ce_rise_reuse": ["ce_rise_models"],
         },
     ]
+    if selected:
+        selected_ce_rise = set(sequence) & set(_by_id(catalog["components"]))
+        for step in steps:
+            step["ce_rise_reuse"] = [component for component in step["ce_rise_reuse"] if component in selected_ce_rise]
     return _result(
         "implementation_plan_result",
         {
@@ -940,6 +950,9 @@ def generate_implementation_plan(arguments: dict[str, object]) -> dict[str, obje
         {
             "architecture_pattern": _public_pattern(pattern),
             "component_sequence": component_sequence,
+            "selection_basis": "user_selection" if selected else "optional_reference_pattern",
+            "optional_reference_components": _component_sequence(pattern, catalog),
+            "composition_policy": catalog["composition_policy"],
             "source_references": _source_references_for_components(sequence),
             "live_service_connections": _live_service_connections_for_components(sequence),
             "update_awareness": _update_awareness_for_components(sequence),
@@ -981,6 +994,8 @@ def assess_implementation_readiness(arguments: dict[str, object]) -> dict[str, o
         {"project_context": project_context},
         {
             "readiness_level": readiness_level,
+            "assessment_scope": "declared_planning_context_only_not_component_dependencies",
+            "composition_policy": catalog["composition_policy"],
             "provided_fields": provided,
             "missing_fields": missing,
             "checklist": checklist,
@@ -1218,23 +1233,27 @@ def recommend_adoption_path(arguments: dict[str, object]) -> dict[str, object]:
     if not paths:
         if _field_present(adoption_context.get("data_sources")) and _field_present(adoption_context.get("shared_information")):
             paths = _records_by_ids(catalog["adoption_paths"], ["local_prototype_path"])
-    else:
-        paths = _records_by_ids(catalog["adoption_paths"], ["exploration_and_readiness"])
+        else:
+            paths = _records_by_ids(catalog["adoption_paths"], ["exploration_and_readiness"])
     primary = paths[0]
-    component_ids = _component_ids_from_records([primary])
+    selected = "selected_components" in adoption_context
+    component_ids = _string_list_arg(adoption_context, "selected_components") if selected else _component_ids_from_records([primary])
     return _result(
         "adoption_path_recommendation_result",
         {"adoption_context": adoption_context, "priorities": priorities},
         {
             "recommended_path": _public_adoption_path(primary),
-            "component_sequence": _component_sequence(primary, catalog),
+            "component_sequence": _components_by_ids(component_ids, catalog),
+            "selection_basis": "user_selection" if selected else "optional_reference_pattern",
+            "optional_reference_components": _component_sequence(primary, catalog),
+            "composition_policy": catalog["composition_policy"],
             "source_references": _source_references_for_components(component_ids),
             "live_service_connections": _live_service_connections_for_components(component_ids),
             "update_awareness": _update_awareness_for_components(component_ids),
             "alternatives": [_public_adoption_path(item) for item in paths[1:]],
             "phase_outline": [_phase_detail(phase_id) for phase_id in primary.get("phase_ids", [])],
             "assumptions": [
-                "The path is a CE-RISE reuse and planning path, not a replacement implementation.",
+                "The path is optional guidance. It does not require replacing external components or adopting a complete CE-RISE stack.",
                 "Compliance drivers must be interpreted with qualified legal or domain expertise where required."
             ],
         },
@@ -1255,6 +1274,8 @@ def generate_implementation_roadmap(arguments: dict[str, object]) -> dict[str, o
         recommended_id = recommendation["content"]["recommended_path"]["id"]
         path = next(item for item in catalog["adoption_paths"] if item["id"] == recommended_id)
 
+    selected = "selected_components" in adoption_context
+    selected_components = _string_list_arg(adoption_context, "selected_components")
     phases = []
     for index, phase_id in enumerate(path.get("phase_ids", []), start=1):
         detail = _phase_detail(str(phase_id))
@@ -1265,11 +1286,11 @@ def generate_implementation_roadmap(arguments: dict[str, object]) -> dict[str, o
                 "title": detail["title"],
                 "objective": detail["objective"],
                 "actions": detail["actions"],
-                "ce_rise_reuse": _phase_components(str(phase_id), path),
+                "ce_rise_reuse": [item for item in _phase_components(str(phase_id), path) if not selected or item in selected_components],
                 "completion_evidence": detail["completion_evidence"],
             }
         )
-    component_ids = _component_ids_from_records([path])
+    component_ids = selected_components if selected else _component_ids_from_records([path])
     return _result(
         "implementation_roadmap_result",
         {
@@ -1281,7 +1302,10 @@ def generate_implementation_roadmap(arguments: dict[str, object]) -> dict[str, o
             "path": _public_adoption_path(path),
             "time_horizon": time_horizon,
             "phases": phases,
-            "suggested_ce_rise_components": _component_sequence(path, catalog),
+            "suggested_ce_rise_components": [item for item in _components_by_ids(component_ids, catalog) if item["id"] in _by_id(catalog["components"])],
+            "selected_components": _components_by_ids(selected_components, catalog),
+            "optional_reference_components": _component_sequence(path, catalog),
+            "composition_policy": catalog["composition_policy"],
             "source_references": _source_references_for_components(component_ids),
             "live_service_connections": _live_service_connections_for_components(component_ids),
             "update_awareness": _update_awareness_for_components(component_ids),
@@ -1319,10 +1343,17 @@ def list_deployment_artifact_templates(arguments: dict[str, object]) -> dict[str
     )
 
 
-def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str, object]:
+def generate_deployment_artifact_plan(
+    arguments: dict[str, object],
+) -> dict[str, object]:
     target = _deployment_target_arg(arguments, "target", required=False) or "both"
     adoption_context = _object_arg(arguments, "adoption_context")
     selected_components = _string_list_arg(arguments, "selected_components")
+    include_core = (
+        "selected_components" not in arguments
+        or "hex_core_service" in selected_components
+    )
+    hex_core_base_url = _deployment_core_url(arguments, include_core)
     include_re_indicators = _bool_arg(
         arguments,
         "include_re_indicators",
@@ -1333,19 +1364,35 @@ def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str,
         "include_see_impacts",
         default="see_impacts_calculation_service" in selected_components,
     )
-    include_internal_adapter = _bool_arg(arguments, "include_internal_adapter", default=False)
+    include_internal_adapter = _bool_arg(
+        arguments,
+        "include_internal_adapter",
+        default="dp_storage_jsondb_service" in selected_components,
+    )
     check_remote_updates = _bool_arg(arguments, "check_remote_updates", default=False)
     timeout_seconds = _update_timeout_arg(arguments, "timeout_seconds")
     manifest = _load_deployment_artifacts()
-    profile_ids = _deployment_profile_ids(target, include_re_indicators, include_internal_adapter, include_see_impacts)
-    templates = _deployment_templates_by_ids(manifest, profile_ids)
+    profile_ids = _deployment_profile_ids(
+        target,
+        include_re_indicators,
+        include_internal_adapter,
+        include_see_impacts,
+        include_core=include_core,
+    )
+    templates = _deployment_templates_by_ids(
+        manifest, profile_ids, include_core=include_core
+    )
     service_components = _unique_strings(
         component
         for template in templates
         for component in template.get("service_components", [])
         if isinstance(component, str)
     )
-    version_component_ids = ["dp_system_gitops_template", "ce_rise_models", *service_components]
+    version_component_ids = (
+        ["dp_system_gitops_template", "ce_rise_models", *service_components]
+        if templates
+        else []
+    )
     version_context = _version_context_for_components(
         version_component_ids,
         check_remote=check_remote_updates,
@@ -1365,12 +1412,25 @@ def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str,
             "selected_components": selected_components,
             "include_re_indicators": include_re_indicators,
             "include_see_impacts": include_see_impacts,
+            "include_core": include_core,
+            "hex_core_base_url": hex_core_base_url
+            if include_core or include_re_indicators or include_see_impacts
+            else None,
             "include_internal_adapter": include_internal_adapter,
             "check_remote_updates": check_remote_updates,
             "timeout_seconds": timeout_seconds,
         },
         {
-            "recommended_templates": [_public_deployment_template(item) for item in templates],
+            "recommended_templates": [
+                _public_deployment_template(item) for item in templates
+            ],
+            "generation_status": "planned" if templates else "not_applicable",
+            "declared_components": _components_by_ids(
+                selected_components, _load_catalog()
+            ),
+            "outside_generation_scope": [
+                item for item in selected_components if item not in service_components
+            ],
             "service_components": service_components,
             "candidate_files": files,
             "source_references": _source_references_for_components(
@@ -1378,21 +1438,30 @@ def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str,
             ),
             "update_awareness": version_context["update_awareness"],
             "version_context": version_context,
-            "configuration_decisions": [
-                "Confirm whether HEX Core Service should use an external IO adapter or an internal adapter profile.",
-                "Confirm model registry catalog entries and allowed artifact hosts.",
-                "Confirm authentication mode and secret management before production use.",
-                "Confirm whether the RE Indicators Calculation Service is needed for this workflow.",
-                "Confirm whether SEE Impacts is needed; register Product System, LCI Dataset, and Integrated LCA models and configure its HEX Core authentication, workspace, and calculation limits.",
-                "Run generated artifacts through the canonical template validation commands before deployment.",
-            ],
+            "configuration_decisions": (
+                [
+                    "Confirm whether HEX Core Service should use an external IO adapter or an internal adapter profile.",
+                    "Confirm model registry catalog entries and allowed artifact hosts.",
+                    "Confirm authentication mode and secret management before production use.",
+                    "Confirm whether the RE Indicators Calculation Service is needed for this workflow.",
+                    "Confirm whether SEE Impacts is needed; register Product System, LCI Dataset, and Integrated LCA models and configure its HEX Core authentication, workspace, and calculation limits.",
+                    "Run generated artifacts through the canonical template validation commands before deployment.",
+                ]
+                if include_core and templates
+                else [
+                    "Configure the selected CE-RISE calculation service's validation endpoint, including an external compatible implementation when chosen.",
+                    "Review only the selected CE-RISE fragments; external components remain in the adopter's deployment workflow.",
+                ]
+                if templates
+                else []
+            ),
             "next_tools": [
                 "generate_deployment_artifacts",
                 "assess_deployment_artifact_readiness",
                 "inspect_connected_source",
                 "build_live_service_readiness_snapshot",
                 "build_update_aware_solution_context",
-            ],
+            ] if templates else [],
             "scope_note": manifest["scope_note"],
         },
         diagnostics=[
@@ -1406,9 +1475,16 @@ def generate_deployment_artifact_plan(arguments: dict[str, object]) -> dict[str,
 
 def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, object]:
     target = _deployment_target_arg(arguments, "target", required=True)
-    project_name = _string_arg(arguments, "project_name", required=False) or "ce-rise-dp-system"
+    project_name = (
+        _string_arg(arguments, "project_name", required=False) or "ce-rise-dp-system"
+    )
     environment = _deployment_environment_arg(arguments, "environment")
     selected_components = _string_list_arg(arguments, "selected_components")
+    include_core = (
+        "selected_components" not in arguments
+        or "hex_core_service" in selected_components
+    )
+    hex_core_base_url = _deployment_core_url(arguments, include_core)
     include_re_indicators = _bool_arg(
         arguments,
         "include_re_indicators",
@@ -1419,15 +1495,27 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
         "include_see_impacts",
         default="see_impacts_calculation_service" in selected_components,
     )
-    include_internal_adapter = _bool_arg(arguments, "include_internal_adapter", default=False)
+    include_internal_adapter = _bool_arg(
+        arguments,
+        "include_internal_adapter",
+        default="dp_storage_jsondb_service" in selected_components,
+    )
     external_io_adapter_url = (
         _string_arg(arguments, "external_io_adapter_url", required=False)
         or "https://io-adapter.example.org"
     )
     auth_mode = _string_arg(arguments, "auth_mode", required=False) or "jwt_jwks"
     manifest = _load_deployment_artifacts()
-    profile_ids = _deployment_profile_ids(target, include_re_indicators, include_internal_adapter, include_see_impacts)
-    templates = _deployment_templates_by_ids(manifest, profile_ids)
+    profile_ids = _deployment_profile_ids(
+        target,
+        include_re_indicators,
+        include_internal_adapter,
+        include_see_impacts,
+        include_core=include_core,
+    )
+    templates = _deployment_templates_by_ids(
+        manifest, profile_ids, include_core=include_core
+    )
     service_components = _unique_strings(
         component
         for template in templates
@@ -1436,14 +1524,20 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
     )
     check_remote_updates = _bool_arg(arguments, "check_remote_updates", default=False)
     timeout_seconds = _update_timeout_arg(arguments, "timeout_seconds")
-    version_component_ids = ["dp_system_gitops_template", "ce_rise_models", *service_components]
+    version_component_ids = (
+        ["dp_system_gitops_template", "ce_rise_models", *service_components]
+        if templates
+        else []
+    )
     version_context = _version_context_for_components(
         version_component_ids,
         check_remote=check_remote_updates,
         timeout_seconds=timeout_seconds,
     )
     files: list[dict[str, object]] = []
-    if target in {"compose", "both"}:
+    if target in {"compose", "both"} and any(
+        item["target"] == "compose" for item in templates
+    ):
         files.extend(
             _generate_compose_artifacts(
                 external_io_adapter_url=external_io_adapter_url,
@@ -1451,27 +1545,34 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
                 include_re_indicators=include_re_indicators,
                 include_see_impacts=include_see_impacts,
                 include_internal_adapter=include_internal_adapter,
+                include_core=include_core,
+                hex_core_base_url=hex_core_base_url,
                 version_context=version_context,
             )
         )
-    if target in {"kubernetes", "both"}:
+    if target in {"kubernetes", "both"} and any(
+        item["target"] == "kubernetes" for item in templates
+    ):
         files.extend(
             _generate_kubernetes_artifacts(
                 project_name=project_name,
                 external_io_adapter_url=external_io_adapter_url,
                 include_re_indicators=include_re_indicators,
                 include_see_impacts=include_see_impacts,
+                include_core=include_core,
+                hex_core_base_url=hex_core_base_url,
                 version_context=version_context,
             )
         )
-    files.append(
-        _artifact_file(
-            "VERSION-CONTEXT.md",
-            _version_context_markdown(version_context),
-            "Version context used when generating this starter artifact set.",
-            mime_type="text/markdown",
+    if files:
+        files.append(
+            _artifact_file(
+                "VERSION-CONTEXT.md",
+                _version_context_markdown(version_context),
+                "Version context used when generating this starter artifact set.",
+                mime_type="text/markdown",
+            )
         )
-    )
     return _result(
         "deployment_artifact_generation_result",
         {
@@ -1481,6 +1582,10 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
             "selected_components": selected_components,
             "include_re_indicators": include_re_indicators,
             "include_see_impacts": include_see_impacts,
+            "include_core": include_core,
+            "hex_core_base_url": hex_core_base_url
+            if include_core or include_re_indicators or include_see_impacts
+            else None,
             "include_internal_adapter": include_internal_adapter,
             "external_io_adapter_url": external_io_adapter_url,
             "auth_mode": auth_mode,
@@ -1489,6 +1594,13 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
         },
         {
             "artifact_set_id": f"{_slugify_project_name(project_name)}-{target}-starter",
+            "generation_status": "generated" if files else "not_applicable",
+            "declared_components": _components_by_ids(
+                selected_components, _load_catalog()
+            ),
+            "outside_generation_scope": [
+                item for item in selected_components if item not in service_components
+            ],
             "templates": [_public_deployment_template(item) for item in templates],
             "files": files,
             "source_references": _source_references_for_components(
@@ -1501,10 +1613,12 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
                 include_re_indicators=include_re_indicators,
                 include_see_impacts=include_see_impacts,
                 include_internal_adapter=include_internal_adapter,
+                include_core=include_core,
             ),
             "limitations": [
-                "Generated files are starter artifacts for planning and review.",
-                "The canonical CE-RISE Digital Passport System GitOps Template remains the deployment source of truth.",
+                "Generated files are optional CE-RISE starter artifacts for planning and review, not a required system architecture.",
+                "External components and models are retained as user choices; their implementations and compatibility are not generated or assessed.",
+                "The canonical CE-RISE GitOps template is the source of these optional CE-RISE fragments, not a required deployment workflow for the complete system.",
                 "Secrets, domains, image tags, registry catalog entries, and environment overlays must be checked by the deployment operator.",
             ],
         },
@@ -1520,23 +1634,34 @@ def generate_deployment_artifacts(arguments: dict[str, object]) -> dict[str, obj
 def assess_deployment_artifact_readiness(arguments: dict[str, object]) -> dict[str, object]:
     deployment_context = _object_arg(arguments, "deployment_context")
     manifest = _load_deployment_artifacts()
+    catalog = _load_catalog()
+    selected = "selected_services" in deployment_context
+    selected_services = _coerce_string_list(deployment_context.get("selected_services"))
+    service_ids = {item["id"] for item in catalog["components"] if item["kind"] == "service"}
+    selected_ce_rise = set(selected_services) & service_ids
     checklist = []
     provided = 0
     for field in manifest["readiness_fields"]:
         field_id = str(field["id"])
+        applicable = not selected or bool(selected_ce_rise)
+        if selected and field_id in {"io_adapter_strategy", "model_registry_strategy"} and "hex_core_service" not in selected_ce_rise:
+            applicable = False
         present = _field_present(deployment_context.get(field_id))
-        if present:
+        if present and applicable:
             provided += 1
         checklist.append(
             {
                 "id": field_id,
                 "label": field["label"],
                 "description": field["description"],
-                "status": "provided" if present else "missing",
+                "status": "not_applicable" if not applicable else "provided" if present else "missing",
             }
         )
-    missing = len(checklist) - provided
-    if missing == 0:
+    applicable_count = sum(item["status"] != "not_applicable" for item in checklist)
+    missing = applicable_count - provided
+    if not applicable_count:
+        readiness_level = "not_applicable"
+    elif missing == 0:
         readiness_level = "ready_for_template_validation"
     elif provided >= 4:
         readiness_level = "partial"
@@ -1547,14 +1672,45 @@ def assess_deployment_artifact_readiness(arguments: dict[str, object]) -> dict[s
         {"deployment_context": deployment_context},
         {
             "readiness_level": readiness_level,
+            "assessment_scope": "declared_ce_rise_deployment_context_only",
+            "composition_policy": catalog["composition_policy"],
+            "selected_components": _components_by_ids(selected_services, catalog),
             "provided_fields": provided,
             "missing_fields": missing,
             "checklist": checklist,
-            "recommended_next_action": _deployment_readiness_next_action(readiness_level),
+            "recommended_next_action": "No supported CE-RISE service was selected; this checklist does not assess the external deployment." if readiness_level == "not_applicable" else _deployment_readiness_next_action(readiness_level),
             "source_references": _source_references_for_components(["dp_system_gitops_template"]),
             "update_awareness": _update_awareness_for_components(["dp_system_gitops_template"]),
             "scope_note": manifest["scope_note"],
         },
+    )
+
+
+def review_configuration_consistency(arguments: dict[str, object]) -> dict[str, object]:
+    target = _string_arg(arguments, "target")
+    environment = _deployment_environment_arg(arguments, "environment")
+    files = arguments.get("files")
+    try:
+        report = review_configuration(
+            files, target, environment, arguments.get("model_catalog")
+        )
+    except ValueError as error:
+        raise InputError(str(error)) from error
+    component_ids = [
+        "dp_system_gitops_template",
+        "hex_core_service",
+        "re_indicators_calculation_service",
+        "see_impacts_calculation_service",
+        "ce_rise_models",
+    ]
+    return _result(
+        "configuration_consistency_review_result",
+        {
+            "target": target,
+            "environment": environment,
+            "file_paths": [item["path"] for item in files],
+        },
+        {**report, "source_references": _source_references_for_components(component_ids)},
     )
 
 
@@ -1762,13 +1918,13 @@ def build_update_aware_solution_context(arguments: dict[str, object]) -> dict[st
     timeout_seconds = _update_timeout_arg(arguments, "timeout_seconds")
     catalog = _load_catalog()
     manifest = _load_update_channels()
-    selected_component_ids = component_ids or _component_ids_for_goal(user_goal, catalog)
+    selected_component_ids = component_ids if "component_ids" in arguments else _component_ids_for_goal(user_goal, catalog)
     components = _components_by_ids(selected_component_ids, catalog)
     channels = _select_update_channels(
         manifest["channels"],
         channel_ids=[],
         component_ids=selected_component_ids,
-    )
+    ) if selected_component_ids else []
     update_checks = [_check_update_channel(channel, timeout_seconds) for channel in channels] if check_remote else []
     return _result(
         "update_aware_solution_context_result",
@@ -1782,6 +1938,7 @@ def build_update_aware_solution_context(arguments: dict[str, object]) -> dict[st
             "stable_scope_note": catalog["scope_note"],
             "update_policy": manifest["policy"],
             "selected_components": components,
+            "composition_policy": catalog["composition_policy"],
             "update_channels": [_public_update_channel(channel) for channel in channels],
             "update_checks": update_checks,
             "usage_guidance": [
@@ -2133,9 +2290,17 @@ def _component_ids_for_goal(user_goal: str | None, catalog: dict[str, Any]) -> l
 def _components_by_ids(component_ids: list[str], catalog: dict[str, Any]) -> list[dict[str, object]]:
     components = _by_id(catalog["components"])
     return [
-        _public_component(components[component_id])
+        _public_component(components[component_id]) if component_id in components else {
+            "id": component_id,
+            "name": component_id,
+            "kind": "user-declared-component",
+            "repository": None,
+            "url": None,
+            "description": "User-selected external or uncatalogued component, retained without assumptions about its implementation.",
+            "assistant_role": "Outside the CE-RISE assessment scope; not a missing or invalid component.",
+            "assessment_scope": "not_assessed",
+        }
         for component_id in component_ids
-        if component_id in components
     ]
 
 
@@ -2164,6 +2329,26 @@ def _deployment_environment_arg(arguments: dict[str, object], name: str) -> str:
     return normalized
 
 
+def _deployment_core_url(arguments: dict[str, object], include_core: bool) -> str:
+    value = _string_arg(arguments, "hex_core_base_url", required=False) or (
+        "http://hex-core-service:8080"
+        if include_core
+        else "https://validation.example.org"
+    )
+    try:
+        parsed = urllib.parse.urlsplit(value)
+        valid = (
+            parsed.scheme in {"http", "https"} and parsed.hostname and parsed.port != 0
+        )
+    except ValueError:
+        valid = False
+    if not valid or any(character in value for character in "\r\n\x00"):
+        raise InputError(
+            "hex_core_base_url must be an absolute HTTP(S) URL with a valid port and no control characters."
+        )
+    return value
+
+
 def _deployment_templates_for_target(
     manifest: dict[str, Any],
     target: str | None,
@@ -2177,9 +2362,25 @@ def _deployment_templates_for_target(
 def _deployment_templates_by_ids(
     manifest: dict[str, Any],
     profile_ids: list[str],
+    *,
+    include_core: bool = True,
 ) -> list[dict[str, object]]:
     by_id = _by_id(manifest["artifact_templates"])
-    return [by_id[profile_id] for profile_id in profile_ids if profile_id in by_id]
+    templates = [by_id[profile_id] for profile_id in profile_ids if profile_id in by_id]
+    if not include_core:
+        templates = [
+            {
+                **item,
+                "included_files": [
+                    path
+                    for path in item["included_files"]
+                    if not path.startswith("k8s/overlays/")
+                    and path != "compose/registry/catalog.json"
+                ],
+            }
+            for item in templates
+        ]
+    return templates
 
 
 def _deployment_profile_ids(
@@ -2187,10 +2388,13 @@ def _deployment_profile_ids(
     include_re_indicators: bool,
     include_internal_adapter: bool,
     include_see_impacts: bool,
+    *,
+    include_core: bool = True,
 ) -> list[str]:
     profile_ids: list[str] = []
     if target in {"compose", "both"}:
-        profile_ids.append("compose_baseline_external_adapter")
+        if include_core:
+            profile_ids.append("compose_baseline_external_adapter")
         if include_internal_adapter:
             profile_ids.append("compose_internal_adapter_profile")
         if include_re_indicators:
@@ -2198,18 +2402,19 @@ def _deployment_profile_ids(
         if include_see_impacts:
             profile_ids.append("compose_see_impacts_profile")
     if target in {"kubernetes", "both"}:
-        profile_ids.extend(
-            [
-                "kubernetes_base",
-                "kubernetes_dev_overlay",
-                "kubernetes_prod_overlay",
-            ]
-        )
+        if include_core:
+            profile_ids.extend(
+                [
+                    "kubernetes_base",
+                    "kubernetes_dev_overlay",
+                    "kubernetes_prod_overlay",
+                ]
+            )
         if include_re_indicators:
             profile_ids.append("kubernetes_re_indicators_extension")
         if include_see_impacts:
             profile_ids.append("kubernetes_see_impacts_extension")
-        if include_re_indicators and include_see_impacts:
+        if include_core and include_re_indicators and include_see_impacts:
             profile_ids.append("kubernetes_calculations_overlays")
     return profile_ids
 
@@ -2245,6 +2450,8 @@ def _generate_compose_artifacts(
     include_see_impacts: bool,
     include_internal_adapter: bool,
     version_context: dict[str, object],
+    include_core: bool = True,
+    hex_core_base_url: str = "http://hex-core-service:8080",
 ) -> list[dict[str, object]]:
     compose = """services:
   hex-core-service:
@@ -2324,7 +2531,13 @@ def _generate_compose_artifacts(
     image: ${IO_ADAPTER_IMAGE}
     restart: unless-stopped
 """
-    return [
+    if not include_core:
+        document = yaml.safe_load(compose)
+        document["services"].pop("hex-core-service", None)
+        for service in document["services"].values():
+            service.pop("depends_on", None)
+        compose = yaml.safe_dump(document, sort_keys=False)
+    files = [
         _artifact_file(
             "compose/docker-compose.yml",
             compose,
@@ -2333,7 +2546,15 @@ def _generate_compose_artifacts(
         ),
         _artifact_file(
             "compose/.env.example",
-            _compose_env_example(external_io_adapter_url, auth_mode),
+            _compose_env_example(
+                external_io_adapter_url,
+                auth_mode,
+                include_core=include_core,
+                include_re_indicators=include_re_indicators,
+                include_see_impacts=include_see_impacts,
+                include_internal_adapter=include_internal_adapter,
+                hex_core_base_url=hex_core_base_url,
+            ),
             "Example Compose environment file; replace URLs, auth, image tags, and ports before deployment.",
         ),
         _artifact_file(
@@ -2344,68 +2565,150 @@ def _generate_compose_artifacts(
         ),
         _artifact_file(
             "compose/README.md",
-            _compose_readme(include_re_indicators, include_internal_adapter, include_see_impacts),
+            _compose_readme(
+                include_re_indicators,
+                include_internal_adapter,
+                include_see_impacts,
+                include_core=include_core,
+            ),
             "Compose usage notes for the generated starter artifact.",
             mime_type="text/markdown",
         ),
     ]
+    return [
+        item
+        for item in files
+        if include_core or item["path"] != "compose/registry/catalog.json"
+    ]
 
 
-def _compose_env_example(external_io_adapter_url: str, auth_mode: str) -> str:
+def _compose_env_example(
+    external_io_adapter_url: str,
+    auth_mode: str,
+    *,
+    include_core: bool = True,
+    include_re_indicators: bool = False,
+    include_see_impacts: bool = False,
+    include_internal_adapter: bool = False,
+    hex_core_base_url: str = "http://hex-core-service:8080",
+) -> str:
     images = _load_deployment_artifacts()["default_images"]
-    return f"""# Image references
-HEX_CORE_IMAGE={images['hex_core_service']}
-RE_INDICATORS_CALC_IMAGE={images['re_indicators_calculation_service']}
-SEE_IMPACTS_CALC_IMAGE={images['see_impacts_calculation_service']}
-IO_ADAPTER_IMAGE={images['dp_storage_jsondb_service']}
+    image_values = {}
+    ports = {}
+    for enabled, key, component, port_key, port in (
+        (include_core, "HEX_CORE_IMAGE", "hex_core_service", "HEX_CORE_PORT", 8080),
+        (
+            include_re_indicators,
+            "RE_INDICATORS_CALC_IMAGE",
+            "re_indicators_calculation_service",
+            "RE_INDICATORS_CALC_PORT",
+            8083,
+        ),
+        (
+            include_see_impacts,
+            "SEE_IMPACTS_CALC_IMAGE",
+            "see_impacts_calculation_service",
+            "SEE_IMPACTS_CALC_PORT",
+            8084,
+        ),
+    ):
+        if enabled:
+            image_values[key] = images[component]
+            ports[port_key] = port
+    if include_internal_adapter:
+        image_values["IO_ADAPTER_IMAGE"] = images["dp_storage_jsondb_service"]
+    sections = [("Image references", image_values), ("Public exposure", ports)]
+    if include_core:
+        sections.extend(
+            [
+                (
+                    "Core runtime",
+                    {
+                        "SERVER_HOST": "0.0.0.0",
+                        "SERVER_PORT": 8080,
+                        "SERVER_REQUEST_MAX_BYTES": 1048576,
+                        "LOG_LEVEL": "info",
+                        "METRICS_ENABLED": "false",
+                    },
+                ),
+                (
+                    "IO adapter",
+                    {
+                        "IO_ADAPTER_ID": "http",
+                        "IO_ADAPTER_BASE_URL": external_io_adapter_url,
+                        "IO_ADAPTER_TIMEOUT_MS": 5000,
+                    },
+                ),
+                (
+                    "Registry",
+                    {
+                        "REGISTRY_MODE": "catalog",
+                        "REGISTRY_CATALOG_FILE": "/config/registry/catalog.json",
+                        "REGISTRY_ALLOWED_HOSTS": "codeberg.org",
+                        "REGISTRY_REQUIRE_HTTPS": "true",
+                        "REGISTRY_CACHE_ENABLED": "false",
+                        "REGISTRY_CACHE_TTL_SECS": 300,
+                    },
+                ),
+                (
+                    "Authentication",
+                    {
+                        "AUTH_MODE": auth_mode,
+                        "AUTH_ALLOW_INSECURE_NONE": "true"
+                        if auth_mode == "none"
+                        else "false",
+                        "AUTH_JWKS_URL": "https://keycloak.example.org/realms/ce-rise/protocol/openid-connect/certs",
+                        "AUTH_ISSUER": "https://keycloak.example.org/realms/ce-rise",
+                        "AUTH_AUDIENCE": "hex-core-service",
+                        "AUTH_JWKS_REFRESH_SECS": 3600,
+                    },
+                ),
+            ]
+        )
+    if include_re_indicators:
+        sections.append(
+            (
+                "RE Indicators calculation service",
+                {
+                    "RE_INDICATORS_HEX_CORE_BASE_URL": hex_core_base_url,
+                    "RE_INDICATORS_ARTIFACT_BASE_URL_TEMPLATE": "https://ce-rise-models.codeberg.page/re-indicators-specification/generated/",
+                    "RE_INDICATORS_HTTP_TIMEOUT_SECS": 15,
+                },
+            )
+        )
+    if include_see_impacts:
+        sections.append(
+            (
+                "SEE Impacts calculation service",
+                {
+                    "SEE_IMPACTS_HEX_CORE_BASE_URL": hex_core_base_url,
+                    "SEE_IMPACTS_HEX_CORE_BEARER_TOKEN": "",
+                    "SEE_IMPACTS_HTTP_TIMEOUT_SECS": 30,
+                    "SEE_IMPACTS_CALCULATION_TIMEOUT_SECS": 900,
+                    "SEE_IMPACTS_MAX_CONCURRENT_CALCULATIONS": 2,
+                },
+            )
+        )
+    return (
+        "\n\n".join(
+            "# "
+            + title
+            + "\n"
+            + "\n".join(f"{key}={value}" for key, value in settings.items())
+            for title, settings in sections
+            if settings
+        )
+        + "\n"
+    )
 
-# Public exposure
-HEX_CORE_PORT=8080
-RE_INDICATORS_CALC_PORT=8083
-SEE_IMPACTS_CALC_PORT=8084
 
-# Core runtime
-SERVER_HOST=0.0.0.0
-SERVER_PORT=8080
-SERVER_REQUEST_MAX_BYTES=1048576
-LOG_LEVEL=info
-METRICS_ENABLED=false
-
-# IO adapter
-IO_ADAPTER_ID=http
-IO_ADAPTER_BASE_URL={external_io_adapter_url}
-IO_ADAPTER_TIMEOUT_MS=5000
-
-# Optional RE indicators calculation service
-RE_INDICATORS_HEX_CORE_BASE_URL=http://hex-core-service:8080
-RE_INDICATORS_ARTIFACT_BASE_URL_TEMPLATE=https://ce-rise-models.codeberg.page/re-indicators-specification/generated/
-RE_INDICATORS_HTTP_TIMEOUT_SECS=15
-
-# Optional SEE Impacts calculation service
-SEE_IMPACTS_HEX_CORE_BASE_URL=http://hex-core-service:8080
-SEE_IMPACTS_HEX_CORE_BEARER_TOKEN=
-SEE_IMPACTS_HTTP_TIMEOUT_SECS=30
-SEE_IMPACTS_CALCULATION_TIMEOUT_SECS=900
-SEE_IMPACTS_MAX_CONCURRENT_CALCULATIONS=2
-
-# Registry
-REGISTRY_MODE=catalog
-REGISTRY_CATALOG_FILE=/config/registry/catalog.json
-REGISTRY_ALLOWED_HOSTS=codeberg.org
-REGISTRY_REQUIRE_HTTPS=true
-REGISTRY_CACHE_ENABLED=false
-REGISTRY_CACHE_TTL_SECS=300
-
-# Authentication
-AUTH_MODE={auth_mode}
-AUTH_JWKS_URL=https://keycloak.example.org/realms/ce-rise/protocol/openid-connect/certs
-AUTH_ISSUER=https://keycloak.example.org/realms/ce-rise
-AUTH_AUDIENCE=hex-core-service
-AUTH_JWKS_REFRESH_SECS=3600
-"""
-
-
-def _compose_readme(include_re_indicators: bool, include_internal_adapter: bool, include_see_impacts: bool) -> str:
+def _compose_readme(
+    include_re_indicators: bool,
+    include_internal_adapter: bool,
+    include_see_impacts: bool,
+    *,
+    include_core: bool = True,
+) -> str:
     optional_profiles = []
     if include_internal_adapter:
         optional_profiles.append("internal-adapter")
@@ -2413,7 +2716,19 @@ def _compose_readme(include_re_indicators: bool, include_internal_adapter: bool,
         optional_profiles.append("re-indicators")
     if include_see_impacts:
         optional_profiles.append("see-impacts")
-    profile_note = ", ".join(optional_profiles) if optional_profiles else "none selected"
+    profile_note = (
+        ", ".join(optional_profiles) if optional_profiles else "none selected"
+    )
+    if not include_core:
+        return f"""# Compose Configuration Fragments
+
+Selected CE-RISE profiles: {profile_note}.
+No local HEX Core or complete CE-RISE stack is added. Combine these fragments with the adopter's
+own components and configure the chosen validation endpoint in `.env`.
+External component implementations and their compatibility are not assessed or generated here.
+Copy `.env.example` to `.env`, configure credentials where required, and render the selected profiles
+before integrating them into the adopter's deployment workflow.
+"""
     return f"""# Compose Starter
 
 This starter follows the CE-RISE Digital Passport System GitOps Template shape.
@@ -2445,12 +2760,14 @@ def _generate_kubernetes_artifacts(
     include_re_indicators: bool,
     include_see_impacts: bool,
     version_context: dict[str, object],
+    include_core: bool = True,
+    hex_core_base_url: str = "http://hex-core-service:8080",
 ) -> list[dict[str, object]]:
     slug = _slugify_project_name(project_name)
     files = [
         _artifact_file(
             "k8s/README.md",
-            _kubernetes_readme(include_re_indicators, include_see_impacts),
+            _kubernetes_readme(include_re_indicators, include_see_impacts, include_core=include_core),
             "Kubernetes usage notes for the generated starter artifact.",
             mime_type="text/markdown",
         ),
@@ -2532,7 +2849,7 @@ def _generate_kubernetes_artifacts(
             [
                 _artifact_file(
                     "k8s/extensions/re-indicators/kustomization.yaml",
-                    _k8s_re_indicators_kustomization(),
+                    _k8s_re_indicators_kustomization(hex_core_base_url),
                     "Kubernetes extension for RE Indicators Calculation Service.",
                     mime_type="application/yaml",
                 ),
@@ -2567,7 +2884,7 @@ def _generate_kubernetes_artifacts(
             [
                 _artifact_file(
                     "k8s/extensions/see-impacts/kustomization.yaml",
-                    _k8s_see_impacts_kustomization(),
+                    _k8s_see_impacts_kustomization(hex_core_base_url),
                     "SEE Impacts environment configuration.",
                     mime_type="application/yaml",
                 ),
@@ -2605,7 +2922,7 @@ def _generate_kubernetes_artifacts(
                         mime_type="application/yaml",
                     )
                 )
-    return files
+    return [item for item in files if include_core or item["path"] == "k8s/README.md" or item["path"].startswith("k8s/extensions/")]
 
 
 def _registry_catalog_json(version_context: dict[str, object] | None = None) -> str:
@@ -2613,7 +2930,16 @@ def _registry_catalog_json(version_context: dict[str, object] | None = None) -> 
     return json.dumps(catalog, indent=2)
 
 
-def _kubernetes_readme(include_re_indicators: bool, include_see_impacts: bool) -> str:
+def _kubernetes_readme(include_re_indicators: bool, include_see_impacts: bool, *, include_core: bool = True) -> str:
+    if not include_core:
+        return """# Kubernetes Configuration Fragments
+
+Only the selected CE-RISE calculation extensions are included. A local HEX Core, registry,
+namespace layout, or complete CE-RISE stack is not imposed. Include the selected extensions
+in the adopter's existing overlays and configure the chosen validation endpoint and credentials.
+Use `kubectl kustomize` on each selected extension to review its resources before integration.
+External implementations and their compatibility remain outside the assistant's assessment.
+"""
     extension_lines = []
     if include_re_indicators:
         extension_lines.append("- use `k8s/overlays/dev-re-indicators` or `k8s/overlays/prod-re-indicators` for RE indicators;")
@@ -2850,8 +3176,8 @@ spec:
 """
 
 
-def _k8s_re_indicators_kustomization() -> str:
-    return """apiVersion: kustomize.config.k8s.io/v1beta1
+def _k8s_re_indicators_kustomization(hex_core_base_url: str = "http://hex-core-service:8080") -> str:
+    return f"""apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
@@ -2861,7 +3187,7 @@ resources:
 configMapGenerator:
   - name: re-indicators-env
     literals:
-      - HEX_CORE_BASE_URL=http://hex-core-service:8080
+      - HEX_CORE_BASE_URL={hex_core_base_url}
       - ARTIFACT_BASE_URL_TEMPLATE=https://ce-rise-models.codeberg.page/re-indicators-specification/generated/
       - HTTP_TIMEOUT_SECS=15
 
@@ -2923,8 +3249,8 @@ resources:
 """
 
 
-def _k8s_see_impacts_kustomization() -> str:
-    return """apiVersion: kustomize.config.k8s.io/v1beta1
+def _k8s_see_impacts_kustomization(hex_core_base_url: str = "http://hex-core-service:8080") -> str:
+    return f"""apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
@@ -2934,7 +3260,7 @@ resources:
 configMapGenerator:
   - name: see-impacts-env
     literals:
-      - HEX_CORE_BASE_URL=http://hex-core-service:8080
+      - HEX_CORE_BASE_URL={hex_core_base_url}
       - HTTP_TIMEOUT_SECS=30
       - CALCULATION_TIMEOUT_SECS=900
       - MAX_CONCURRENT_CALCULATIONS=2
@@ -3052,9 +3378,10 @@ def _deployment_validation_commands(
     include_re_indicators: bool,
     include_see_impacts: bool,
     include_internal_adapter: bool,
+    include_core: bool = True,
 ) -> list[str]:
     commands = []
-    if target in {"compose", "both"}:
+    if target in {"compose", "both"} and (include_core or include_re_indicators or include_see_impacts or include_internal_adapter):
         profile_args = []
         if include_internal_adapter:
             profile_args.append("--profile internal-adapter")
@@ -3067,6 +3394,12 @@ def _deployment_validation_commands(
             f"docker compose -f compose/docker-compose.yml --env-file compose/.env.example{profile_segment} config"
         )
     if target in {"kubernetes", "both"}:
+        if not include_core:
+            if include_re_indicators:
+                commands.append("kubectl kustomize k8s/extensions/re-indicators")
+            if include_see_impacts:
+                commands.append("kubectl kustomize k8s/extensions/see-impacts")
+            return commands
         commands.extend(
             [
                 "kubectl kustomize k8s/overlays/dev",
@@ -3176,7 +3509,7 @@ def _update_awareness_for_components(component_ids: list[str]) -> dict[str, obje
         manifest["channels"],
         channel_ids=[],
         component_ids=unique_component_ids,
-    )
+    ) if unique_component_ids else []
     status = "current_metadata_not_checked" if channels else "no_update_channels_configured"
     if channels:
         message = (
@@ -3215,11 +3548,12 @@ def _version_context_for_components(
         manifest["channels"],
         channel_ids=[],
         component_ids=unique_component_ids,
-    )
-    checks = [_check_update_channel(channel, timeout_seconds) for channel in channels] if check_remote else []
+    ) if unique_component_ids else []
+    performed_remote_checks = check_remote and bool(channels)
+    checks = [_check_update_channel(channel, timeout_seconds) for channel in channels] if performed_remote_checks else []
     resolved_versions = _resolved_versions_from_checks(checks)
     update_awareness = _update_awareness_for_components(unique_component_ids)
-    if check_remote:
+    if performed_remote_checks:
         update_awareness = {
             **update_awareness,
             "status": "current_metadata_checked",
@@ -3227,8 +3561,8 @@ def _version_context_for_components(
             "recommended_action": "Review current metadata before applying generated artifacts.",
         }
     return {
-        "policy": "current_metadata_when_checked" if check_remote else "stable_manifest_with_update_notice",
-        "remote_checked": check_remote,
+        "policy": "not_applicable" if not channels else "current_metadata_when_checked" if performed_remote_checks else "stable_manifest_with_update_notice",
+        "remote_checked": performed_remote_checks,
         "timeout_seconds": timeout_seconds,
         "component_ids": unique_component_ids,
         "update_channels": [_public_update_channel(channel) for channel in channels],
@@ -3238,10 +3572,10 @@ def _version_context_for_components(
         "application_note": (
             "Generated artifact contents use current checked metadata where the channel maps cleanly "
             "to an artifact field; otherwise they include the metadata for review."
-        ) if check_remote else (
+        ) if performed_remote_checks else (
             "Generated artifact contents use stable manifest defaults. Run the same generation call "
             "with check_remote_updates=true to include current upstream metadata."
-        ),
+        ) if channels else "No configured CE-RISE update channels apply to this selection; external components were not checked.",
     }
 
 
@@ -3403,12 +3737,7 @@ def _version_context_markdown(version_context: dict[str, object]) -> str:
 
 
 def _component_sequence(record: dict[str, object], catalog: dict[str, Any]) -> list[dict[str, object]]:
-    components = _by_id(catalog["components"])
-    return [
-        _public_component(components[component_id])
-        for component_id in record.get("component_sequence", [])
-        if component_id in components
-    ]
+    return _components_by_ids(record.get("component_sequence", []), catalog)
 
 
 def _phase_components(phase_id: str, path: dict[str, object]) -> list[str]:
@@ -3442,27 +3771,27 @@ def _phase_detail(phase_id: str) -> dict[str, object]:
             "completion_evidence": ["Readiness result has a concrete next action."]
         },
         "select_reuse_path": {
-            "title": "Select the CE-RISE reuse path",
-            "objective": "Choose which existing CE-RISE assets should support the next implementation step.",
-            "actions": ["Select a reference-example, model-first, value-chain exchange, or deployment preparation path."],
-            "completion_evidence": ["Selected CE-RISE path and component sequence are documented."]
+            "title": "Select the component reuse path",
+            "objective": "Preserve the chosen CE-RISE, external, or mixed composition and identify the interfaces relevant to the next step.",
+            "actions": ["Use an appropriate reference path where helpful, without adding unselected CE-RISE components."],
+            "completion_evidence": ["Selected component choices and interfaces are documented; CE-RISE references are optional."]
         },
         "select_local_components": {
             "title": "Select local prototype components",
-            "objective": "Prepare a local CE-RISE component set for prototype learning and validation.",
-            "actions": ["Review the local demonstrator as an example and select the service components needed for the declared scope."],
+            "objective": "Prepare the chosen CE-RISE and external components for prototype learning and validation.",
+            "actions": ["Review relevant examples only where useful; preserve the adopter's existing components and deployment choices."],
             "completion_evidence": ["Local component choices and assumptions are documented."]
         },
         "run_local_demonstrator": {
             "title": "Generalize the local demonstrator pattern",
             "objective": "Use the demonstrator as an example of component interaction while adapting scope, payloads, checks, and configuration to the adopter context.",
-            "actions": ["Run or inspect the CE-RISE local demonstrator, identify reusable workflow patterns, and record what must change for the declared scope."],
+            "actions": ["Optionally inspect the CE-RISE local demonstrator for selected interfaces, or retain the adopter's own reference workflow. Its CE-RISE component set is not required."],
             "completion_evidence": ["Reusable patterns, non-reusable demo assumptions, and context-specific gaps are recorded."]
         },
         "validate_model_and_data": {
             "title": "Validate model and data readiness",
             "objective": "Check whether declared information needs align with model and validation assets.",
-            "actions": ["Use CE-RISE model assets and document coverage questions or gaps."],
+            "actions": ["Use the selected CE-RISE or external model sources and document the declared interfaces and coverage questions. External model compatibility is not inferred."],
             "completion_evidence": ["Model coverage or gap result is available."]
         },
         "scope_information_requirements": {
@@ -3480,7 +3809,7 @@ def _phase_detail(phase_id: str) -> dict[str, object]:
         "assess_model_coverage": {
             "title": "Assess model coverage",
             "objective": "Use model assessment to compare information needs against available model assets.",
-            "actions": ["Review available CE-RISE model artifacts against the declared information needs."],
+            "actions": ["Review the chosen model sources against the declared information needs; CE-RISE model references are optional, not required replacements for external models."],
             "completion_evidence": ["Coverage result or assessment plan exists."]
         },
         "prioritize_model_gaps": {
@@ -3509,7 +3838,7 @@ def _phase_detail(phase_id: str) -> dict[str, object]:
         },
         "confirm_component_choices": {
             "title": "Confirm component choices",
-            "objective": "Confirm the CE-RISE services, storage, models, and deployment templates needed for the next stage.",
+            "objective": "Confirm the selected CE-RISE and external services, storage, models, and deployment workflow for the next stage.",
             "actions": ["Record selected components, versions, configuration assumptions, and ownership."],
             "completion_evidence": ["Component choices are confirmed."]
         },
@@ -3521,9 +3850,9 @@ def _phase_detail(phase_id: str) -> dict[str, object]:
         },
         "map_to_gitops_template": {
             "title": "Map to GitOps template",
-            "objective": "Use the existing CE-RISE GitOps template as the deployment preparation path.",
-            "actions": ["Map selected services and configuration assumptions to the GitOps template."],
-            "completion_evidence": ["GitOps mapping is documented."]
+            "objective": "Consider the CE-RISE GitOps template where it helps the adopter's chosen deployment workflow.",
+            "actions": ["Reuse appropriate CE-RISE configuration fragments without replacing or assessing the adopter's external deployment components."],
+            "completion_evidence": ["The chosen deployment integration is documented, including optional CE-RISE fragments when used."]
         },
         "plan_operational_checks": {
             "title": "Plan operational checks",
@@ -3914,6 +4243,11 @@ TOOL_DEFINITIONS = [
                     "description": "Optional priorities such as local validation, deployment, model alignment, or production preparation.",
                     "items": {"type": "string"},
                 },
+                "selected_components": {
+                    "type": "array",
+                    "description": "Optional user-selected CE-RISE ids and external component labels. When provided, this selection is preserved without adding a required CE-RISE stack.",
+                    "items": {"type": "string"},
+                },
             },
             ["use_case"],
         ),
@@ -3934,7 +4268,7 @@ TOOL_DEFINITIONS = [
                 },
                 "known_components": {
                     "type": "array",
-                    "description": "Optional known CE-RISE component ids already selected.",
+                    "description": "Optional selected CE-RISE ids and external component labels. User selections are preserved; reference patterns do not add mandatory components.",
                     "items": {"type": "string"},
                 },
             },
@@ -4108,7 +4442,7 @@ TOOL_DEFINITIONS = [
                 },
                 "selected_components": {
                     "type": "array",
-                    "description": "Optional CE-RISE component ids already selected.",
+                    "description": "Optional selected CE-RISE ids and external component labels. Only selected CE-RISE parts are generated; omitting this argument requests the optional HEX Core reference baseline.",
                     "items": {"type": "string"},
                 },
                 "include_re_indicators": {
@@ -4118,6 +4452,10 @@ TOOL_DEFINITIONS = [
                 "include_see_impacts": {
                     "type": "boolean",
                     "description": "Include SEE Impacts profiles/extensions independently of RE Indicators. Defaults to whether see_impacts_calculation_service is in selected_components.",
+                },
+                "hex_core_base_url": {
+                    "type": "string",
+                    "description": "Validation endpoint used by selected CE-RISE calculation services. May be an external compatible implementation; its compatibility is not assessed here.",
                 },
                 "include_internal_adapter": {
                     "type": "boolean",
@@ -4155,7 +4493,7 @@ TOOL_DEFINITIONS = [
                 },
                 "selected_components": {
                     "type": "array",
-                    "description": "Optional CE-RISE component ids already selected.",
+                    "description": "Optional selected CE-RISE ids and external component labels. Only selected CE-RISE parts are generated; omitting this argument requests the optional HEX Core reference baseline.",
                     "items": {"type": "string"},
                 },
                 "include_re_indicators": {
@@ -4165,6 +4503,10 @@ TOOL_DEFINITIONS = [
                 "include_see_impacts": {
                     "type": "boolean",
                     "description": "Include SEE Impacts profiles/extensions independently of RE Indicators. Defaults to whether see_impacts_calculation_service is in selected_components.",
+                },
+                "hex_core_base_url": {
+                    "type": "string",
+                    "description": "Validation endpoint used by selected CE-RISE calculation services. May be an external compatible implementation; its compatibility is not assessed here.",
                 },
                 "include_internal_adapter": {
                     "type": "boolean",
@@ -4203,6 +4545,41 @@ TOOL_DEFINITIONS = [
                 },
             },
             ["deployment_context"],
+        ),
+    },
+    {
+        "name": "review_configuration_consistency",
+        "title": "Review Configuration Consistency",
+        "description": "Review supplied resolved Compose or rendered Kubernetes configuration for CE-RISE service, port, URL, model catalog, and authentication inconsistencies. Does not open supplied paths, contact services, or execute commands.",
+        "inputSchema": _tool_input_schema(
+            {
+                "target": {"type": "string", "enum": ["compose", "kubernetes"]},
+                "environment": {
+                    "type": "string",
+                    "enum": ["local", "dev", "prod"],
+                    "description": "Defaults to local; prod also checks for disabled authentication.",
+                },
+                "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "description": "File path labels and JSON/YAML contents. Supply resolved Compose configuration or rendered Kubernetes manifests, not unevaluated Kustomize overlays. Redact credential values while retaining their keys.",
+                    "items": {
+                        "type": "object",
+                        "required": ["path", "content"],
+                        "properties": {
+                            "path": {"type": "string"},
+                            "content": {"type": "string"},
+                        },
+                        "additionalProperties": True,
+                    },
+                },
+                "model_catalog": {
+                    "type": ["object", "array"],
+                    "description": "Optional catalog contents when a referenced catalog file is not supplied. Inline or mounted catalog contents take precedence.",
+                },
+            },
+            ["target", "files"],
         ),
     },
     {
@@ -4507,6 +4884,7 @@ TOOL_HANDLERS = {
     "generate_deployment_artifact_plan": generate_deployment_artifact_plan,
     "generate_deployment_artifacts": generate_deployment_artifacts,
     "assess_deployment_artifact_readiness": assess_deployment_artifact_readiness,
+    "review_configuration_consistency": review_configuration_consistency,
     "list_reference_examples": list_reference_examples,
     "generalize_reference_example": generalize_reference_example,
     "list_update_channels": list_update_channels,
@@ -4634,8 +5012,12 @@ class McpServer:
                     "version": __version__,
                 },
                 "instructions": (
-                    "Use this server to discover and combine existing CE-RISE assets for Digital Passport "
-                    "engineering workflows. It guides reuse; it does not replace CE-RISE components."
+                    "Use this server to select CE-RISE components and models independently or combine them "
+                    "with external software, models, and deployment workflows. Preserve the user's choices. "
+                    "No complete CE-RISE stack is required. Architecture patterns and templates are optional "
+                    "references. Assess only supplied, supported CE-RISE configuration and declared CE-RISE "
+                    "connections; external components are outside assessment, not missing dependencies. "
+                    "Do not claim that unassessed external implementations are compatible."
                 ),
             },
         )
@@ -4712,7 +5094,8 @@ class McpServer:
                             "text": (
                                 "The CE-RISE Digital Passport Engineering Assistant helps users make the most "
                                 "of existing CE-RISE components, services, schemas, documentation, methods, and "
-                                "deployment workflows. It must not substitute, replace, or bypass them."
+                                "deployment workflows. It guides reuse without reimplementing the selected CE-RISE assets."
+                                " " + _load_catalog()["composition_policy"]
                             ),
                         }
                     ]

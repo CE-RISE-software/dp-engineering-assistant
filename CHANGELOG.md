@@ -2,15 +2,16 @@
 
 All notable changes to the CE-RISE Digital Passport Engineering Assistant project will be documented in this file.
 
-## [0.0.2] - 2026-11-03
+## [0.0.2] - 2026-11-04
 
 ### Added
 - SEE Impacts discovery, model references, release tracking, and read-only service probes.
-- Compose and Kubernetes generation for SEE alone or alongside RE Indicators, with focused integration tests.
+- Compose and Kubernetes fragments for independently selected CE-RISE services.
+- Static CE-RISE configuration review with field-specific findings.
 
 ### Changed
-- Aligned generated deployments with the updated GitOps template and pinned service images.
-- Updated documentation and demonstrator guidance for environmental footprint workflows.
+- Preserved mixed CE-RISE/external selections; reference architectures remain optional and external parts are outside assessment.
+- Updated pinned images, documentation, examples, and automated tests.
 
 ## [0.0.1] - 2026-05-07
 
